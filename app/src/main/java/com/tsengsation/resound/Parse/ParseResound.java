@@ -51,6 +51,18 @@ public class ParseResound extends Application {
         mArticles = new ArrayList<>();
         mFilteredArticles = new ArrayList<>();
         mInstance = this;
+        // download completed listener that does nothing
+        mDownloadCompletedListener = new OnDownloadCompletedListener() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onFail() {
+
+            }
+        };
     }
 
     public void downloadData() {

@@ -11,15 +11,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.parse.ParseAnalytics;
-import com.tsengsation.resound.Events.OnDownloadCompletedListener;
 import com.tsengsation.resound.Events.OnImageLoadedListener;
 import com.tsengsation.resound.Parse.Article;
 import com.tsengsation.resound.Parse.ParseResound;
 import com.tsengsation.resound.PicassoHelper.CircleTransformation;
 import com.tsengsation.resound.R;
+import com.tsengsation.resound.ViewHelpers.ImageUrlViewPair;
+import com.tsengsation.resound.ViewHelpers.MultiImageLoader;
 
 
 public class MainActivity extends Activity {
@@ -49,8 +48,7 @@ public class MainActivity extends Activity {
     }
 
     private void setUpView() {
-        // TODO: need to wait for ParseResound to be ready before enabling buttons
-        // probably load screen
+        loadArticle(mParseResound.getCurrentArticle());
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -123,22 +121,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
-        ParseAnalytics.trackAppOpenedInBackground(getIntent());
         mParseResound = ParseResound.getInstance();
-
-        mParseResound.setOnDownloadCompleted(new OnDownloadCompletedListener() {
-            @Override
-            public void onSuccess() {
-                loadArticle(mParseResound.getCurrentArticle());
-            }
-
-            @Override
-            public void onFail() {
-                Toast.makeText(getApplicationContext(), "download failed", Toast.LENGTH_LONG).show();
-            }
-        });
-
-        mParseResound.downloadData();
         initializeViewReferences();
         setUpView();
     }

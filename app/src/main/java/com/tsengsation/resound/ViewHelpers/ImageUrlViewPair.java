@@ -1,4 +1,4 @@
-package com.tsengsation.resound.Views;
+package com.tsengsation.resound.ViewHelpers;
 
 import android.widget.ImageView;
 

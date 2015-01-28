@@ -1,4 +1,4 @@
-package com.tsengsation.resound.Views;
+package com.tsengsation.resound.ViewHelpers;
 
 import android.content.Context;
 
@@ -17,7 +17,7 @@ public class MultiImageLoader {
         this.mContext = mContext;
     }
 
-    public void attachImages(ImageUrlViewPair ... pairs) {
+    public void attachImages(ImageUrlViewPair... pairs) {
         for (ImageUrlViewPair pair : pairs) {
             if (pair.getTransformation() == null) {
                 Picasso.with(mContext).load(pair.getUrl()).into(pair.getImageView());
