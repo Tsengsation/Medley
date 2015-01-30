@@ -52,8 +52,6 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
                 android.R.anim.fade_in));
         mArticleImageSwitcher.getImageSwitcher().setOutAnimation(AnimationUtils.loadAnimation(this,
                 android.R.anim.fade_out));
-        mArticleImageSwitcher.getImageSwitcher().setOutAnimation(AnimationUtils.loadAnimation(this,
-                android.R.anim.s));
     }
 
     @Override
