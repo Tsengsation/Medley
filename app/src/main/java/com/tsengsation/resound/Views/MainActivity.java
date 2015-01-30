@@ -1,129 +1,129 @@
 package com.tsengsation.resound.Views;
 
-import android.app.Activity;
-import android.graphics.Point;
+import android.content.Context;
 import android.os.Bundle;
-import android.view.Display;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.Window;
-import android.widget.Button;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
-import com.tsengsation.resound.Events.OnImageLoadedListener;
-import com.tsengsation.resound.Parse.Article;
+import com.squareup.picasso.Picasso;
+import com.tsengsation.resound.Parse.ArticleIndexOutOfBoundsException;
 import com.tsengsation.resound.Parse.ParseResound;
-import com.tsengsation.resound.PicassoHelper.CircleTransformation;
+import com.tsengsation.resound.PicassoHelper.PicassoImageSwitcher;
 import com.tsengsation.resound.R;
-import com.tsengsation.resound.ViewHelpers.ImageUrlViewPair;
-import com.tsengsation.resound.ViewHelpers.MultiImageLoader;
+import com.tsengsation.resound.ViewHelpers.ViewCalculator;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewFactory {
 
     private ParseResound mParseResound;
 
-    private ImageView mAuthorImageView;
-    private ImageView mArticleImageView;
-    private TextView mAuthorName;
-    private TextView mArticleTitle;
-    private TextView mArticleText;
-    private TextView mArticleDate;
-    private LinearLayout mArticleLayout;
-    private LinearLayout mArticleTitleLayout;
-    private LinearLayout mArticleAuthorLayout;
-
-    // TODO remove
-    private Button mNextButton;
-    private Button mPreviousButton;
-
-    private double pxToDP(double px) {
-        return getApplicationContext().getResources().getDisplayMetrics().density * px;
-    }
-
-    private double dpToPX(double dp) {
-        return dp / (getApplicationContext().getResources().getDisplayMetrics().density);
-    }
-
-    private void setUpView() {
-        loadArticle(mParseResound.getCurrentArticle());
-        mNextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadArticle(mParseResound.getNextArticle());
-            }
-        });
-        mPreviousButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadArticle(mParseResound.getPreviousArticle());
-            }
-        });
-    }
-
-    private void loadArticle(Article article) {
-        mAuthorName.setText("by " + article.getAuthor().getName());
-        mArticleTitle.setText(article.getTitle());
-        mArticleText.setText(article.getText());
-        mArticleDate.setText(article.getDate());
-
-        MultiImageLoader multiImageLoader = new MultiImageLoader(getApplicationContext());
-        multiImageLoader.setOnImageLoaded(new OnImageLoadedListener() {
-            @Override
-            public void onSuccess() {
-                // TODO probably quit out of loading screen or something
-                // i.e., start with loading screen
-                final ViewTreeObserver titleObserver = mArticleTitleLayout.getViewTreeObserver();
-                titleObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        final ViewTreeObserver authorObserver = mArticleAuthorLayout.getViewTreeObserver();
-                        authorObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                            @Override
-                            public void onGlobalLayout() {
-                                Display display = getWindowManager().getDefaultDisplay();
-                                Point size = new Point();
-                                display.getSize(size);
-                                int height = size.y;
-                                int offset = mArticleTitleLayout.getMeasuredHeight() + mArticleAuthorLayout.getMeasuredHeight();
-                                mArticleLayout.setPadding(0, height - offset, 0, (int) dpToPX(5));
-                            }
-                        });
-                    }
-                });
-            }
-        });
-        multiImageLoader.attachImages(
-                new ImageUrlViewPair(article.getImageUrl(), mArticleImageView),
-                new ImageUrlViewPair(article.getAuthor().getImageUrl(), mAuthorImageView, new CircleTransformation()));
-    }
-
-    private void initializeViewReferences() {
-        mAuthorImageView = (ImageView) findViewById(R.id.author_image);
-        mArticleImageView = (ImageView) findViewById(R.id.article_image);
-        mAuthorName = (TextView) findViewById(R.id.author_name);
-        mArticleTitle = (TextView) findViewById(R.id.article_title);
-        mArticleText = (TextView) findViewById(R.id.article_text);
-        mArticleDate = (TextView) findViewById(R.id.article_date);
-        mArticleLayout = (LinearLayout) findViewById(R.id.article_card);
-        mArticleTitleLayout = (LinearLayout) findViewById(R.id.article_header);
-        mArticleAuthorLayout = (LinearLayout) findViewById(R.id.article_info);
-
-        // TODO remove
-        mNextButton = (Button) findViewById(R.id.next);
-        mPreviousButton = (Button) findViewById(R.id.prev);
-    }
+    private PicassoImageSwitcher mArticleImageSwitcher;
+    private ViewPager mArticlePager;
+    private ArticlePagerAdapter mArticlePagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
+        // instantiate calculator so it has context for rest of application
+        ViewCalculator.getInstance(getApplicationContext());
         mParseResound = ParseResound.getInstance();
-        initializeViewReferences();
-        setUpView();
+        initViewReferences();
+        setUpSwipes();
+        setUpImageSwitching();
+        setImage(0);
+    }
+
+    private void setUpImageSwitching() {
+        mArticleImageSwitcher.getImageSwitcher().setFactory(this);
+        mArticleImageSwitcher.getImageSwitcher().setInAnimation(AnimationUtils.loadAnimation(this,
+                android.R.anim.fade_in));
+        mArticleImageSwitcher.getImageSwitcher().setOutAnimation(AnimationUtils.loadAnimation(this,
+                android.R.anim.fade_out));
+        mArticleImageSwitcher.getImageSwitcher().setOutAnimation(AnimationUtils.loadAnimation(this,
+                android.R.anim.s));
+    }
+
+    @Override
+    public View makeView() {
+        ImageView imageView = new ImageView(this);
+        imageView.setBackgroundColor(0xFFFFFFFF);
+        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        imageView.setLayoutParams(new ImageSwitcher.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT));
+        return imageView;
+    }
+
+    private void setUpSwipes() {
+        mArticlePagerAdapter = new ArticlePagerAdapter(getApplicationContext(), getSupportFragmentManager());
+        mArticlePager.setAdapter(mArticlePagerAdapter);
+        mArticlePager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                setImage(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+    }
+
+    private void setImage(int position) {
+        ArticleFragment articleFragment = (ArticleFragment) mArticlePagerAdapter.getItem(position);
+        Picasso.with(getApplicationContext()).load(articleFragment.getArticle().getImageUrl()).into(mArticleImageSwitcher);
+    }
+
+    private void initViewReferences() {
+        ImageSwitcher imageSwitcher = (ImageSwitcher) findViewById(R.id.article_image_switcher);
+        mArticleImageSwitcher = new PicassoImageSwitcher(getApplicationContext(), imageSwitcher);
+        mArticlePager = (ViewPager) findViewById(R.id.article_pager);
+    }
+
+    public class ArticlePagerAdapter extends FragmentStatePagerAdapter {
+
+        private Context mContext;
+
+        public ArticlePagerAdapter(Context context, FragmentManager manager) {
+            super(manager);
+            mContext = context;
+        }
+
+        @Override
+        public int getCount() {
+            return ParseResound.getInstance().getNumFilteredArticles();
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            Fragment fragment = null;
+            try {
+                fragment = ArticleFragment.newInstance(mContext, ParseResound.getInstance().getArticle(position));
+            } catch (ArticleIndexOutOfBoundsException e) {
+                Log.e("Article Swipe", e.getMessage());
+            } finally {
+                return fragment;
+            }
+        }
     }
 
 }

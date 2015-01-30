@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#888888"
+    android:background="#000000"
     android:gravity="center"
     android:orientation="vertical"
     tools:context=".SplashActivity">
@@ -20,6 +20,7 @@
             android:text="R"
             android:textSize="20dp"
             android:textStyle="bold"
+            android:textColor="#ffffff"
             android:gravity="center" />
 
         <TextView
@@ -29,6 +30,7 @@
             android:text="E"
             android:textSize="20dp"
             android:textStyle="bold"
+            android:textColor="#ffffff"
             android:gravity="center" />
 
         <TextView
@@ -38,6 +40,7 @@
             android:text="S"
             android:textSize="20dp"
             android:textStyle="bold"
+            android:textColor="#ffffff"
             android:gravity="center" />
 
         <TextView
@@ -47,6 +50,7 @@
             android:text="O"
             android:textSize="20dp"
             android:textStyle="bold"
+            android:textColor="#ffffff"
             android:gravity="center" />
 
         <TextView
@@ -56,6 +60,7 @@
             android:text="U"
             android:textSize="20dp"
             android:textStyle="bold"
+            android:textColor="#ffffff"
             android:gravity="center" />
 
         <TextView
@@ -65,6 +70,7 @@
             android:text="N"
             android:textSize="20dp"
             android:textStyle="bold"
+            android:textColor="#ffffff"
             android:gravity="center" />
 
         <TextView
@@ -74,15 +80,9 @@
             android:text="D"
             android:textSize="20dp"
             android:textStyle="bold"
+            android:textColor="#ffffff"
             android:gravity="center" />
 
     </LinearLayout>
-
-    <ProgressBar
-        android:id="@+id/splash_progress_spinner"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="visible" />
 
 </LinearLayout>

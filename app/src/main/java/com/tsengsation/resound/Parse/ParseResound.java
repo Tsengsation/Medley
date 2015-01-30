@@ -81,6 +81,17 @@ public class ParseResound extends Application {
         return mInstance;
     }
 
+    public int getNumFilteredArticles() {
+        return mFilteredArticles.size();
+    }
+
+    public Article getArticle(int position) throws ArticleIndexOutOfBoundsException {
+        if (position < 0 || position >= mFilteredArticles.size()) {
+            throw new ArticleIndexOutOfBoundsException(position, mFilteredArticles.size());
+        }
+        return mFilteredArticles.get(position);
+    }
+
     public Article getCurrentArticle() {
         return (mFilteredArticles.size() > mArticleIndex) ? mFilteredArticles.get(mArticleIndex) : mFilteredArticles.get(mFilteredArticles.size() - 1);
     }
