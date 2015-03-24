@@ -4,6 +4,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.Html;
+import android.text.format.DateFormat;
+import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,12 +81,18 @@ public class ArticleFragment extends Fragment {
         mArticleLayout.setPadding(0, ViewCalculator.getWindowHeight(), 0, (int) ViewCalculator.dpToPX(5));
     }
 
+    public void setHtml(TextView textView, String text) {
+        textView.setText(Html.fromHtml(text));
+        textView.setMovementMethod(LinkMovementMethod.getInstance());
+    }
+
     public void loadArticle() {
         mArticleScrollView.scrollTo(0, 0);
-        mAuthorName.setText("by " + mArticle.getAuthor().getName());
+        setHtml(mAuthorName, String.format("%s %s", "by ", mArticle.getAuthor().getName()));
         mArticleTitle.setText(mArticle.getTitle());
-        mArticleText.setText(mArticle.getText());
-        mArticleDate.setText(mArticle.getDate());
+        setHtml(mArticleText, mArticle.getText());
+        String dateString = DateFormat.format("MM/dd/yyyy", mArticle.getDate()).toString();
+        setHtml(mArticleDate, dateString);
 
         MultiImageLoader multiImageLoader = new MultiImageLoader(mContext);
         multiImageLoader.setOnImageLoaded(new OnImageLoadedListener() {
@@ -98,7 +108,9 @@ public class ArticleFragment extends Fragment {
                         authorObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                             @Override
                             public void onGlobalLayout() {
-                                mOffset = ViewCalculator.getWindowHeight() - (mArticleTitleLayout.getMeasuredHeight() + mArticleAuthorLayout.getMeasuredHeight());
+                                Log.e("tests", Integer.toString((int) ViewCalculator.dpToPX(21)));
+                                mOffset = ViewCalculator.getWindowHeight() - (mArticleTitleLayout.getMeasuredHeight() + mArticleAuthorLayout.getMeasuredHeight())
+                                - (int) ViewCalculator.dpToPX(21);
                                 mArticleLayout.setPadding(0, mOffset, 0, (int) ViewCalculator.dpToPX(5));
                             }
                         });

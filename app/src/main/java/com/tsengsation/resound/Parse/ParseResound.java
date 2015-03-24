@@ -28,10 +28,15 @@ public class ParseResound extends Application {
 
     private static final String ARTICLE_DATE_KEY = "articleDate";
     private static final String ARTICLE_IMAGE_KEY = "articleImage";
+    private static final String ARTICLE_IMAGE_SOURCENAME_KEY = "articleImageSourceName";
+    private static final String ARTICLE_IMAGE_SOURCEURL_KEY = "articleImageSourceURL";
     private static final String ARTICLE_TEXT_KEY = "articleText";
     private static final String ARTICLE_TITLE_KEY = "articleTitle";
+    private static final String ARTICLE_URL_KEY = "articleURL";
     private static final String ARTICLE_AUTHOR_ID_KEY = "authorID";
     private static final String ARTICLE_TYPE_KEY = "category";
+    private static final String ARTICLE_LIKES_KEY = "numLikes";
+
     private static final String AUTHOR_IMAGE_KEY = "image";
     private static final String AUTHOR_NAME_KEY = "name";
 
@@ -120,7 +125,6 @@ public class ParseResound extends Application {
                 if (e == null) {
                     Log.d("Authors", "Retrieved " + authors.size() + " authors");
                     for (ParseObject authorObj : authors) {
-                        Log.d("work pls", "aaa " + authorObj.getString("image"));
                         Author author = new Author(
                                 authorObj.getParseFile(AUTHOR_IMAGE_KEY).getUrl(),
                                 authorObj.getString(AUTHOR_NAME_KEY));
@@ -149,9 +153,13 @@ public class ParseResound extends Application {
                         Article article = new Article(
                                 ArticleType.createType(articleObj.getString(ARTICLE_TYPE_KEY)),
                                 articleObj.getParseFile(ARTICLE_IMAGE_KEY).getUrl(),
-                                articleObj.getString(ARTICLE_DATE_KEY),
+                                articleObj.getDate(ARTICLE_DATE_KEY),
                                 articleObj.getString(ARTICLE_TEXT_KEY),
                                 articleObj.getString(ARTICLE_TITLE_KEY),
+                                articleObj.getString(ARTICLE_IMAGE_SOURCENAME_KEY),
+                                articleObj.getString(ARTICLE_IMAGE_SOURCEURL_KEY),
+                                articleObj.getNumber(ARTICLE_LIKES_KEY).longValue(),
+                                articleObj.getString(ARTICLE_URL_KEY),
                                 mAuthorsMap.get(articleObj.getString(ARTICLE_AUTHOR_ID_KEY)));
                         mArticles.add(article);
                     }

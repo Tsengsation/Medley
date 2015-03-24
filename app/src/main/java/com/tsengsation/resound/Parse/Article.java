@@ -1,23 +1,33 @@
 package com.tsengsation.resound.Parse;
 
+import java.util.Date;
+
 /**
  * Created by jonathantseng on 1/21/15.
  */
 public class Article {
     private ArticleType mType;
     private String mImageUrl;
-    private String mDate;
+    private Date mDate;
     private String mText;
     private String mTitle;
+    private String mSourceName;
+    private String mSourceUrl;
+    private long mLikes;
+    private String mUrl;
     private Author mAuthor;
 
-    public Article(ArticleType mType, String mImageUrl, String mDate,
-                   String mText, String mTitle, Author mAuthor) {
+    public Article(ArticleType mType, String mImageUrl, Date mDate, String mText, String mTitle,
+                   String mSourceName, String mSourceUrl, long mLikes, String mUrl, Author mAuthor) {
         this.mType = mType;
         this.mImageUrl = mImageUrl;
         this.mDate = mDate;
         this.mText = mText;
         this.mTitle = mTitle;
+        this.mSourceName = mSourceName;
+        this.mSourceUrl = mSourceUrl;
+        this.mLikes = mLikes;
+        this.mUrl = mUrl;
         this.mAuthor = mAuthor;
     }
 
@@ -25,7 +35,7 @@ public class Article {
         return mType;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return mDate;
     }
 

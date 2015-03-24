@@ -26,11 +26,11 @@ public class ViewCalculator {
     }
 
     public static double pxToDP(double px) {
-        return mContext.getResources().getDisplayMetrics().density * px;
+        return px / mContext.getResources().getDisplayMetrics().density;
     }
 
     public static double dpToPX(double dp) {
-        return dp / (mContext.getResources().getDisplayMetrics().density);
+        return dp * mContext.getResources().getDisplayMetrics().density;
     }
 
     public static int getWindowHeight() {
