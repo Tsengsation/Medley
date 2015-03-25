@@ -19,7 +19,6 @@ import android.widget.ViewSwitcher;
 import com.squareup.picasso.Picasso;
 import com.tsengsation.resound.Parse.ArticleIndexOutOfBoundsException;
 import com.tsengsation.resound.Parse.ParseResound;
-import com.tsengsation.resound.PicassoHelper.BlurTransformation;
 import com.tsengsation.resound.PicassoHelper.PicassoImageSwitcher;
 import com.tsengsation.resound.R;
 import com.tsengsation.resound.ViewHelpers.ViewCalculator;
@@ -89,7 +88,7 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
 
     private void setImage(int position) {
         ArticleFragment articleFragment = (ArticleFragment) mArticlePagerAdapter.getItem(position);
-        Picasso.with(getApplicationContext()).load(articleFragment.getArticle().getImageUrl()).transform(new BlurTransformation(getApplicationContext())).into(mArticleImageSwitcher);
+        Picasso.with(getApplicationContext()).load(articleFragment.getArticle().getImageUrl()).into(mArticleImageSwitcher);
     }
 
     private void initViewReferences() {

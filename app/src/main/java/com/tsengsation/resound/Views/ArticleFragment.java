@@ -1,17 +1,18 @@
 package com.tsengsation.resound.Views;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Html;
 import android.text.format.DateFormat;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -31,14 +32,17 @@ import com.tsengsation.resound.ViewHelpers.ViewCalculator;
  */
 public class ArticleFragment extends Fragment {
 
-    private static int oNumItems = 0;
+    private final static String CSS_TAG = "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\" />";
+    private final static String ASSET_URL = "file:///android_asset/";
+    private final static String HTML = "text/html";
+    private final static String ENCODING = "UTF-8";
 
     private ParseResound mParseResound;
 
     private ImageView mAuthorImageView;
     private TextView mAuthorName;
     private TextView mArticleTitle;
-    private TextView mArticleText;
+    private WebView mArticleWebView;
     private TextView mArticleDate;
     private LinearLayout mArticleLayout;
     private LinearLayout mArticleTitleLayout;
@@ -69,6 +73,7 @@ public class ArticleFragment extends Fragment {
     }
 
     private void setUpView() {
+        mArticleWebView.setBackgroundColor(Color.TRANSPARENT);
         mArticleTitleLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -86,11 +91,15 @@ public class ArticleFragment extends Fragment {
         textView.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
+    public String convertTextToHtml(String articleText) {
+        return String.format("<html> %s <body> <div> %s </div> </body> </html>", CSS_TAG, articleText);
+    }
+
     public void loadArticle() {
         mArticleScrollView.scrollTo(0, 0);
         setHtml(mAuthorName, String.format("%s %s", "by ", mArticle.getAuthor().getName()));
         mArticleTitle.setText(mArticle.getTitle());
-        setHtml(mArticleText, mArticle.getText());
+        mArticleWebView.loadDataWithBaseURL(ASSET_URL, convertTextToHtml(mArticle.getText()), HTML, ENCODING, null);
         String dateString = DateFormat.format("MM/dd/yyyy", mArticle.getDate()).toString();
         setHtml(mArticleDate, dateString);
 
@@ -108,9 +117,8 @@ public class ArticleFragment extends Fragment {
                         authorObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                             @Override
                             public void onGlobalLayout() {
-                                Log.e("tests", Integer.toString((int) ViewCalculator.dpToPX(21)));
                                 mOffset = ViewCalculator.getWindowHeight() - (mArticleTitleLayout.getMeasuredHeight() + mArticleAuthorLayout.getMeasuredHeight())
-                                - (int) ViewCalculator.dpToPX(21);
+                                        - (int) ViewCalculator.dpToPX(21);
                                 mArticleLayout.setPadding(0, mOffset, 0, (int) ViewCalculator.dpToPX(5));
                             }
                         });
@@ -135,7 +143,7 @@ public class ArticleFragment extends Fragment {
         mAuthorImageView = (ImageView) view.findViewById(R.id.author_image);
         mAuthorName = (TextView) view.findViewById(R.id.author_name);
         mArticleTitle = (TextView) view.findViewById(R.id.article_title);
-        mArticleText = (TextView) view.findViewById(R.id.article_text);
+        mArticleWebView = (WebView) view.findViewById(R.id.article_webview);
         mArticleDate = (TextView) view.findViewById(R.id.article_date);
         mArticleLayout = (LinearLayout) view.findViewById(R.id.article_card);
         mArticleTitleLayout = (LinearLayout) view.findViewById(R.id.article_header);
