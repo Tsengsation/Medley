@@ -18,7 +18,7 @@ public class ArticleLibrary {
         Collections.sort(mArticles, new Comparator<Article>() {
             @Override
             public int compare(Article art1, Article art2) {
-                return art1.getDate().compareTo(art2.getDate());
+                return art2.getDate().compareTo(art1.getDate());
             }
         });
         mFilteredArticles = new ArrayList<>(mArticles);

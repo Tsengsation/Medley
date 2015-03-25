@@ -10,7 +10,6 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -30,12 +29,15 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
     private final static float MAX_ALPHA = 0.6f;
     private final static int MAX_ALPHA_OFFSET_DP = 80;
 
-    private ParseResound mParseResound;
-
-    private PicassoImageSwitcher mArticleImageSwitcher;
+    private PicassoImageSwitcher mArticleImageSwitcherCurr;
+    private PicassoImageSwitcher mArticleImageSwitcherPrev;
+    private PicassoImageSwitcher mArticleImageSwitcherNext;
     private ViewPager mArticlePager;
     private ArticlePagerAdapter mArticlePagerAdapter;
     private View mFadeView;
+
+    private int mCurrPosition;
+    private float mCurrFadeY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +46,6 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
         setContentView(R.layout.activity_main);
         // instantiate calculator so it has context for rest of application
         ViewCalculator.getInstance(getApplicationContext());
-        mParseResound = ParseResound.getInstance();
         initViewReferences();
         setUpSwipes();
         setUpImageSwitching();
@@ -52,11 +53,11 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
     }
 
     private void setUpImageSwitching() {
-        mArticleImageSwitcher.getImageSwitcher().setFactory(this);
-        mArticleImageSwitcher.getImageSwitcher().setInAnimation(AnimationUtils.loadAnimation(this,
-                android.R.anim.fade_in));
-        mArticleImageSwitcher.getImageSwitcher().setOutAnimation(AnimationUtils.loadAnimation(this,
-                android.R.anim.fade_out));
+        mArticleImageSwitcherCurr.getImageSwitcher().setFactory(this);
+//        mArticleImageSwitcherCurr.getImageSwitcher().setInAnimation(AnimationUtils.loadAnimation(this,
+//                android.R.anim.fade_in));
+//        mArticleImageSwitcherCurr.getImageSwitcher().setOutAnimation(AnimationUtils.loadAnimation(this,
+//                android.R.anim.fade_out));
     }
 
     @Override
@@ -77,13 +78,20 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
         mArticlePager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
+                float offset;
+                if (position == mCurrPosition) { // scrolling to right
+                    offset = positionOffset;
+                } else { // scrolling to left
+                    offset = 1f - positionOffset;
+                }
+                updateFadeX(offset);
             }
 
             @Override
             public void onPageSelected(int position) {
+                mCurrPosition = position;
                 setImage(position);
-                mFadeView.setAlpha(0f);
+                updateFadeY(0);
             }
 
             @Override
@@ -95,25 +103,37 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
 
     private void setImage(int position) {
         ArticleFragment articleFragment = (ArticleFragment) mArticlePagerAdapter.getItem(position);
-        Picasso.with(getApplicationContext()).load(articleFragment.getArticle().getImageUrl()).into(mArticleImageSwitcher);
+        Picasso.with(getApplicationContext()).load(articleFragment.getArticle().getImageUrl()).into(mArticleImageSwitcherCurr);
     }
 
     private void initViewReferences() {
-        ImageSwitcher imageSwitcher = (ImageSwitcher) findViewById(R.id.article_image_switcher);
-        mArticleImageSwitcher = new PicassoImageSwitcher(getApplicationContext(), imageSwitcher);
+        ImageSwitcher imageSwitcher1 = (ImageSwitcher) findViewById(R.id.article_image_switcher_1);
+        ImageSwitcher imageSwitcher2 = (ImageSwitcher) findViewById(R.id.article_image_switcher_2);
+        ImageSwitcher imageSwitcher3 = (ImageSwitcher) findViewById(R.id.article_image_switcher_3);
+        imageSwitcher2.setAlpha(0f);
+        imageSwitcher3.setAlpha(0f);
+        mArticleImageSwitcherCurr = new PicassoImageSwitcher(getApplicationContext(), imageSwitcher1);
+        mArticleImageSwitcherPrev = new PicassoImageSwitcher(getApplicationContext(), imageSwitcher2);
+        mArticleImageSwitcherNext = new PicassoImageSwitcher(getApplicationContext(), imageSwitcher3);
         mArticlePager = (ViewPager) findViewById(R.id.article_pager);
         mFadeView = findViewById(R.id.fade_view);
     }
 
-    private void updateFade(int scroll) {
-        float alpha = 0f;
+    private void updateFadeX(float xScroll) {
+        float alpha = mCurrFadeY * (1 - xScroll);
+        mFadeView.setAlpha(alpha);
+    }
+
+    private void updateFadeY(int yScroll) {
+        float alpha;
         float maxOffset = (float) ViewCalculator.dpToPX(MAX_ALPHA_OFFSET_DP);
-        if (scroll > maxOffset) {
+        if (yScroll > maxOffset) {
             alpha = MAX_ALPHA;
         } else {
-            alpha = MAX_ALPHA * scroll / maxOffset;
+            alpha = MAX_ALPHA * yScroll / maxOffset;
         }
         mFadeView.setAlpha(alpha);
+        mCurrFadeY = alpha;
     }
 
     public class ArticlePagerAdapter extends FragmentStatePagerAdapter {
@@ -139,7 +159,7 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
                 articleFragment.setOnScrolled(new OnScrolledListener() {
                     @Override
                     public void onScrolled(int oldY, int newY) {
-                        updateFade(newY);
+                        updateFadeY(newY);
                     }
                 });
             } catch (ArticleIndexOutOfBoundsException e) {
