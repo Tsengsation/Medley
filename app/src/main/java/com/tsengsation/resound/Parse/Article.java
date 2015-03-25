@@ -54,4 +54,20 @@ public class Article {
     public String getImageUrl() {
         return mImageUrl;
     }
+
+    public String getImageSourceName() {
+        return mSourceName;
+    }
+
+    public String getImageSourceUrl() {
+        return mSourceUrl;
+    }
+
+    public String getResourUrl() {
+        return mUrl;
+    }
+
+    public long getNumLikes() {
+        return mLikes;
+    }
 }

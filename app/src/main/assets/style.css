@@ -50,12 +50,12 @@ pre {
 }
 
 ul {
-  padding-left:1em;
+  padding-left:em;
   margin-top:0;
   margin-bottom:1em;
 }
 ol {
-  padding-left:1em;
+  padding-left:em;
   margin-top:0;
   margin-bottom:1em;
 }

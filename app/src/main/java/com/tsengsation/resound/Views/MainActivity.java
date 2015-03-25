@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.ViewSwitcher;
 
 import com.squareup.picasso.Picasso;
+import com.tsengsation.resound.Events.OnScrolledListener;
 import com.tsengsation.resound.Parse.ArticleIndexOutOfBoundsException;
 import com.tsengsation.resound.Parse.ParseResound;
 import com.tsengsation.resound.PicassoHelper.PicassoImageSwitcher;
@@ -26,11 +27,15 @@ import com.tsengsation.resound.ViewHelpers.ViewCalculator;
 
 public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewFactory {
 
+    private final static float MAX_ALPHA = 0.6f;
+    private final static int MAX_ALPHA_OFFSET_DP = 80;
+
     private ParseResound mParseResound;
 
     private PicassoImageSwitcher mArticleImageSwitcher;
     private ViewPager mArticlePager;
     private ArticlePagerAdapter mArticlePagerAdapter;
+    private View mFadeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +73,7 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
     private void setUpSwipes() {
         mArticlePagerAdapter = new ArticlePagerAdapter(getApplicationContext(), getSupportFragmentManager());
         mArticlePager.setAdapter(mArticlePagerAdapter);
+        mArticlePager.setOffscreenPageLimit(0);
         mArticlePager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -77,6 +83,8 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
             @Override
             public void onPageSelected(int position) {
                 setImage(position);
+                mFadeView.setAlpha(0f);
+                Log.d("new page", "yya");
             }
 
             @Override
@@ -95,6 +103,20 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
         ImageSwitcher imageSwitcher = (ImageSwitcher) findViewById(R.id.article_image_switcher);
         mArticleImageSwitcher = new PicassoImageSwitcher(getApplicationContext(), imageSwitcher);
         mArticlePager = (ViewPager) findViewById(R.id.article_pager);
+        mFadeView = findViewById(R.id.fade_view);
+    }
+
+    private void updateFade(int scroll) {
+        float alpha = 0f;
+        float maxOffset = (float) ViewCalculator.dpToPX(MAX_ALPHA_OFFSET_DP);
+        if (scroll > maxOffset) {
+            alpha = MAX_ALPHA;
+        } else {
+            alpha = MAX_ALPHA * scroll / maxOffset;
+        }
+        mFadeView.setAlpha(alpha);
+        Log.d("lol", Integer.toString(scroll));
+        Log.d("faded", Float.toString(mFadeView.getAlpha()));
     }
 
     public class ArticlePagerAdapter extends FragmentStatePagerAdapter {
@@ -116,6 +138,13 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
             Fragment fragment = null;
             try {
                 fragment = ArticleFragment.newInstance(mContext, ParseResound.getInstance().getArticle(position));
+                final ArticleFragment articleFragment = (ArticleFragment) fragment;
+                articleFragment.setOnScrolled(new OnScrolledListener() {
+                    @Override
+                    public void onScrolled(int oldY, int newY) {
+                        updateFade(newY);
+                    }
+                });
             } catch (ArticleIndexOutOfBoundsException e) {
                 Log.e("Article Swipe", e.getMessage());
             } finally {

@@ -3,6 +3,7 @@ package com.tsengsation.resound.Views;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Html;
@@ -15,16 +16,17 @@ import android.view.ViewTreeObserver;
 import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.tsengsation.resound.Events.OnImageLoadedListener;
+import com.tsengsation.resound.Events.OnScrolledListener;
 import com.tsengsation.resound.Parse.Article;
 import com.tsengsation.resound.Parse.ParseResound;
 import com.tsengsation.resound.PicassoHelper.CircleTransformation;
 import com.tsengsation.resound.R;
 import com.tsengsation.resound.ViewHelpers.ImageUrlViewPair;
 import com.tsengsation.resound.ViewHelpers.MultiImageLoader;
+import com.tsengsation.resound.ViewHelpers.ObservableScrollView;
 import com.tsengsation.resound.ViewHelpers.ViewCalculator;
 
 /**
@@ -33,9 +35,14 @@ import com.tsengsation.resound.ViewHelpers.ViewCalculator;
 public class ArticleFragment extends Fragment {
 
     private final static String CSS_TAG = "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\" />";
+    private final static String COVER_IMAGE_TEXT = "Cover Image Source:";
     private final static String ASSET_URL = "file:///android_asset/";
     private final static String HTML = "text/html";
     private final static String ENCODING = "UTF-8";
+
+    private final static int SCROLL_MS = 500;
+    private final static int SCROLL_ITERS = 100;
+    private final static int SCROLL_WAIT = SCROLL_MS / SCROLL_ITERS;
 
     private ParseResound mParseResound;
 
@@ -47,17 +54,28 @@ public class ArticleFragment extends Fragment {
     private LinearLayout mArticleLayout;
     private LinearLayout mArticleTitleLayout;
     private LinearLayout mArticleAuthorLayout;
-    private ScrollView mArticleScrollView;
+    private ObservableScrollView mArticleScrollView;
 
     private Context mContext;
     private Article mArticle;
     private int mOffset;
+    private OnScrolledListener mOnScrolledListener;
 
     public static ArticleFragment newInstance(Context context, Article article) {
         ArticleFragment fragment = new ArticleFragment();
         fragment.setContext(context);
         fragment.setArticle(article);
         return fragment;
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (!isVisibleToUser && mArticleScrollView != null) {
+            mArticleScrollView.removeOnScrolled();
+            resetScroll();
+            mArticleScrollView.setOnScrolled(mOnScrolledListener);
+        }
     }
 
     public Article getArticle() {
@@ -72,13 +90,28 @@ public class ArticleFragment extends Fragment {
         mArticle = article;
     }
 
+    public void setOnScrolled(final OnScrolledListener listener) {
+        mOnScrolledListener = listener;
+    }
+
     private void setUpView() {
+        mArticleScrollView.setOnScrolled(mOnScrolledListener);
         mArticleWebView.setBackgroundColor(Color.TRANSPARENT);
         mArticleTitleLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mArticleScrollView.getScrollY() == 0) {
-                    mArticleScrollView.smoothScrollBy(0, mOffset);
+                if (mArticleScrollView.getScrollY() < 5) {
+                    new CountDownTimer(SCROLL_MS, SCROLL_WAIT) {
+                        @Override
+                        public void onTick(long millisUntilFinished) {
+                            mArticleScrollView.smoothScrollTo(0, (int) ((SCROLL_MS - millisUntilFinished) / ((float) SCROLL_MS) * mOffset));
+                        }
+
+                        @Override
+                        public void onFinish() {
+                            mArticleScrollView.smoothScrollTo(0, mOffset);
+                        }
+                    }.start();
                 }
             }
         });
@@ -91,16 +124,21 @@ public class ArticleFragment extends Fragment {
         textView.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
-    public String convertTextToHtml(String articleText) {
-        return String.format("<html> %s <body> <div> %s </div> </body> </html>", CSS_TAG, articleText);
+    public String convertArticleToHtml(Article article) {
+        return String.format("<html> %s <body> <div> %s <hr/> <pre>%s <a href=\"%s\">%s</a></pre> </div> </body> </html>",
+                CSS_TAG, article.getText(), COVER_IMAGE_TEXT, article.getImageSourceUrl(), article.getImageSourceName());
+    }
+
+    private void resetScroll() {
+        mArticleScrollView.scrollTo(0, 0);
     }
 
     public void loadArticle() {
-        mArticleScrollView.scrollTo(0, 0);
+        resetScroll();
         setHtml(mAuthorName, String.format("%s %s", "by ", mArticle.getAuthor().getName()));
         mArticleTitle.setText(mArticle.getTitle());
-        mArticleWebView.loadDataWithBaseURL(ASSET_URL, convertTextToHtml(mArticle.getText()), HTML, ENCODING, null);
-        String dateString = DateFormat.format("MM/dd/yyyy", mArticle.getDate()).toString();
+        mArticleWebView.loadDataWithBaseURL(ASSET_URL, convertArticleToHtml(mArticle), HTML, ENCODING, null);
+        String dateString = DateFormat.format("M/d/yyyy, h:mm a", mArticle.getDate()).toString();
         setHtml(mArticleDate, dateString);
 
         MultiImageLoader multiImageLoader = new MultiImageLoader(mContext);
@@ -148,6 +186,6 @@ public class ArticleFragment extends Fragment {
         mArticleLayout = (LinearLayout) view.findViewById(R.id.article_card);
         mArticleTitleLayout = (LinearLayout) view.findViewById(R.id.article_header);
         mArticleAuthorLayout = (LinearLayout) view.findViewById(R.id.article_info);
-        mArticleScrollView = (ScrollView) view.findViewById(R.id.article_scroll);
+        mArticleScrollView = (ObservableScrollView) view.findViewById(R.id.article_scroll);
     }
 }
