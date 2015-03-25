@@ -42,10 +42,8 @@ public class ParseResound extends Application {
 
     private static ParseResound mInstance = null;
     private OnDownloadCompletedListener mDownloadCompletedListener;
-    private List<Article> mArticles;
-    private List<Article> mFilteredArticles;
     private Map<String, Author> mAuthorsMap;
-    private int mArticleIndex;
+    private ArticleLibrary mArticleLibrary;
     private ParseQuery mCurrentQuery;
 
     /**
@@ -53,8 +51,6 @@ public class ParseResound extends Application {
      * Public in order for android to compile and run
      */
     public ParseResound() {
-        mArticles = new ArrayList<>();
-        mFilteredArticles = new ArrayList<>();
         mInstance = this;
         // download completed listener that does nothing
         mDownloadCompletedListener = new OnDownloadCompletedListener() {
@@ -86,34 +82,16 @@ public class ParseResound extends Application {
         return mInstance;
     }
 
-    public int getNumFilteredArticles() {
-        return mFilteredArticles.size();
-    }
-
     public Article getArticle(int position) throws ArticleIndexOutOfBoundsException {
-        if (position < 0 || position >= mFilteredArticles.size()) {
-            throw new ArticleIndexOutOfBoundsException(position, mFilteredArticles.size());
-        }
-        return mFilteredArticles.get(position);
+        return mArticleLibrary.getArticle(position);
     }
 
-    public Article getCurrentArticle() {
-        return (mFilteredArticles.size() > mArticleIndex) ? mFilteredArticles.get(mArticleIndex) : mFilteredArticles.get(mFilteredArticles.size() - 1);
-    }
-
-    public Article getNextArticle() {
-        mArticleIndex = (mArticleIndex < mFilteredArticles.size() - 1) ? mArticleIndex + 1 : mFilteredArticles.size() - 1;
-        return getCurrentArticle();
-    }
-
-    public Article getPreviousArticle() {
-        mArticleIndex = (mArticleIndex > 0) ? mArticleIndex - 1 : 0;
-        return getCurrentArticle();
+    public int getNumArticles() {
+        return mArticleLibrary.getCount();
     }
 
     public void filterArticles(ArticleType type) {
-        // todo filter mFilteredArticles
-        mArticleIndex = 0;
+        mArticleLibrary.filterByType(type);
     }
 
     private void pullAllAuthors() {
@@ -140,8 +118,7 @@ public class ParseResound extends Application {
     }
 
     private void pullAllArticles() {
-        mArticles = new ArrayList<>();
-        mFilteredArticles = new ArrayList<>();
+        final List<Article> foundArticles = new ArrayList<>();
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ARTICLE_TABLE_KEY);
         mCurrentQuery = query;
         query.orderByAscending(ARTICLE_DATE_KEY);
@@ -161,10 +138,9 @@ public class ParseResound extends Application {
                                 articleObj.getNumber(ARTICLE_LIKES_KEY).longValue(),
                                 articleObj.getString(ARTICLE_URL_KEY),
                                 mAuthorsMap.get(articleObj.getString(ARTICLE_AUTHOR_ID_KEY)));
-                        mArticles.add(article);
+                        foundArticles.add(article);
                     }
-                    mFilteredArticles = mArticles;
-                    mArticleIndex = 0;
+                    mArticleLibrary = new ArticleLibrary(foundArticles);
                     mCurrentQuery = null;
                     mDownloadCompletedListener.onSuccess();
                 } else {

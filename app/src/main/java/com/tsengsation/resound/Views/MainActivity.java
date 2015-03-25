@@ -84,7 +84,6 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
             public void onPageSelected(int position) {
                 setImage(position);
                 mFadeView.setAlpha(0f);
-                Log.d("new page", "yya");
             }
 
             @Override
@@ -115,8 +114,6 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
             alpha = MAX_ALPHA * scroll / maxOffset;
         }
         mFadeView.setAlpha(alpha);
-        Log.d("lol", Integer.toString(scroll));
-        Log.d("faded", Float.toString(mFadeView.getAlpha()));
     }
 
     public class ArticlePagerAdapter extends FragmentStatePagerAdapter {
@@ -130,7 +127,7 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
 
         @Override
         public int getCount() {
-            return ParseResound.getInstance().getNumFilteredArticles();
+            return ParseResound.getInstance().getNumArticles();
         }
 
         @Override
