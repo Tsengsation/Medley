@@ -24,6 +24,7 @@ import com.tsengsation.resound.Parse.ArticleIndexOutOfBoundsException;
 import com.tsengsation.resound.Parse.ParseResound;
 import com.tsengsation.resound.PicassoHelper.PicassoImageSwitcher;
 import com.tsengsation.resound.R;
+import com.tsengsation.resound.ViewHelpers.ResoundNavBar;
 import com.tsengsation.resound.ViewHelpers.ViewCalculator;
 
 
@@ -38,6 +39,7 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
     private ViewPager mArticlePager;
     private ArticlePagerAdapter mArticlePagerAdapter;
     private View mFadeView;
+    private ResoundNavBar mNavbar;
 
     private ParseResound mParseResound;
     private int mCurrPosition;
@@ -171,6 +173,8 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
         mArticleImageSwitcherNext = new PicassoImageSwitcher(getApplicationContext(), imageSwitcher3);
         mArticlePager = (ViewPager) findViewById(R.id.article_pager);
         mFadeView = findViewById(R.id.fade_view);
+        mNavbar = (ResoundNavBar) findViewById(R.id.navbar);
+        mNavbar.setText("temp text");
     }
 
     private void updateImageFades(PicassoImageSwitcher nextImageSwitcher, float offset) {
@@ -225,7 +229,6 @@ public class MainActivity extends FragmentActivity implements ViewSwitcher.ViewF
                     @Override
                     public void onFlung(int velocityY) {
                         if (velocityY < 0) {
-                            Log.d("fling", "lol");
                             new CountDownTimer(100, 5) {
                                 @Override
                                 public void onTick(long millisUntilFinished) {
