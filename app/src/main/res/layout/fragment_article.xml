@@ -77,13 +77,15 @@
                                 android:id="@+id/author_name"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="#ffffff" />
+                                android:textColor="#ffffff"
+                                android:textStyle="bold"/>
 
                             <TextView
                                 android:id="@+id/article_date"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="#ffffff" />
+                                android:textColor="#ffffff"
+                                android:textSize="10dp"/>
 
                         </LinearLayout>
 

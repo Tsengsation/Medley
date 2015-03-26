@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.tsengsation.resound.Events.OnFlingListener;
 import com.tsengsation.resound.Events.OnImageLoadedListener;
 import com.tsengsation.resound.Events.OnScrolledListener;
 import com.tsengsation.resound.Parse.Article;
@@ -40,7 +41,7 @@ public class ArticleFragment extends Fragment {
     private final static String HTML = "text/html";
     private final static String ENCODING = "UTF-8";
 
-    private final static int SCROLL_MS = 500;
+    private final static int SCROLL_MS = 350;
     private final static int SCROLL_ITERS = 100;
     private final static int SCROLL_WAIT = SCROLL_MS / SCROLL_ITERS;
 
@@ -60,6 +61,7 @@ public class ArticleFragment extends Fragment {
     private Article mArticle;
     private int mOffset;
     private OnScrolledListener mOnScrolledListener;
+    private OnFlingListener mOnFlingListener;
 
     public static ArticleFragment newInstance(Context context, Article article) {
         ArticleFragment fragment = new ArticleFragment();
@@ -90,12 +92,17 @@ public class ArticleFragment extends Fragment {
         mArticle = article;
     }
 
-    public void setOnScrolled(final OnScrolledListener listener) {
+    public void setOnScrolled(OnScrolledListener listener) {
         mOnScrolledListener = listener;
+    }
+
+    public void setOnFlung(OnFlingListener listener) {
+        mOnFlingListener = listener;
     }
 
     private void setUpView() {
         mArticleScrollView.setOnScrolled(mOnScrolledListener);
+        mArticleScrollView.setOnFlung(mOnFlingListener);
         mArticleWebView.setBackgroundColor(Color.TRANSPARENT);
         mArticleTitleLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -156,7 +163,7 @@ public class ArticleFragment extends Fragment {
                             @Override
                             public void onGlobalLayout() {
                                 mOffset = ViewCalculator.getWindowHeight() - (mArticleTitleLayout.getMeasuredHeight() + mArticleAuthorLayout.getMeasuredHeight())
-                                        - (int) ViewCalculator.dpToPX(21);
+                                        - (int) ViewCalculator.dpToPX(26);
                                 mArticleLayout.setPadding(0, mOffset, 0, (int) ViewCalculator.dpToPX(5));
                             }
                         });

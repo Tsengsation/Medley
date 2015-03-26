@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ScrollView;
 
+import com.tsengsation.resound.Events.OnFlingListener;
 import com.tsengsation.resound.Events.OnScrolledListener;
 
 /**
@@ -12,7 +13,7 @@ import com.tsengsation.resound.Events.OnScrolledListener;
 public class ObservableScrollView extends ScrollView {
 
     private OnScrolledListener mScrollViewListener;
-    private boolean mInterceptScroll = true;
+    private OnFlingListener mFlingListener;
 
     public ObservableScrollView(Context context) {
         super(context);
@@ -30,19 +31,27 @@ public class ObservableScrollView extends ScrollView {
         this.mScrollViewListener = scrollViewListener;
     }
 
+    public void setOnFlung(OnFlingListener flingListener) {
+        this.mFlingListener = flingListener;
+    }
+
     public void removeOnScrolled() {
         this.mScrollViewListener = null;
     }
 
     @Override
+    public void fling(int velocityY) {
+        super.fling(velocityY);
+        if (mFlingListener != null) {
+            mFlingListener.onFlung(velocityY);
+        }
+    }
+
+    @Override
     protected void onScrollChanged(int x, int y, int oldx, int oldy) {
-        if (mInterceptScroll) {
-            mInterceptScroll = false;
-            super.onScrollChanged(x, y, oldx, oldy);
-            if (mScrollViewListener != null) {
-                mScrollViewListener.onScrolled(y, oldy);
-            }
-            mInterceptScroll = true;
+        super.onScrollChanged(x, y, oldx, oldy);
+        if (mScrollViewListener != null) {
+            mScrollViewListener.onScrolled(y, oldy);
         }
     }
 }
