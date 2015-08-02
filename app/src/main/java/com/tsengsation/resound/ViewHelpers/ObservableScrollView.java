@@ -4,11 +4,8 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ScrollView;
 
-import com.tsengsation.resound.Events.OnFlingListener;
-import com.tsengsation.resound.Events.OnScrolledListener;
-
 /**
- * Created by jonathantseng on 3/24/15.
+ * ScrollView that supports callbacks when scroll events and fling events happen.
  */
 public class ObservableScrollView extends ScrollView {
 
@@ -53,5 +50,21 @@ public class ObservableScrollView extends ScrollView {
         if (mScrollViewListener != null) {
             mScrollViewListener.onScrolled(y, oldy);
         }
+    }
+
+    /**
+     * Listener for scroll event occurrences.
+     */
+    public static interface OnScrolledListener {
+
+        void onScrolled(int oldY, int newY);
+    }
+
+    /**
+     * Listener for fling event occurrences.
+     */
+    public static interface OnFlingListener {
+
+        public void onFlung(int velocityY);
     }
 }

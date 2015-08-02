@@ -6,39 +6,25 @@ import android.view.Display;
 import android.view.WindowManager;
 
 /**
- * Created by jonathantseng on 1/29/15.
+ * Utility class for overall view information and conversions between px and dp.
  */
 public class ViewCalculator {
 
-    private static ViewCalculator mInstance;
-    private static Context mContext;
-
-    private ViewCalculator(Context context) {
-        mInstance = this;
-        mContext = context;
+    public static double pxToDP(Context context, double px) {
+        return px / context.getResources().getDisplayMetrics().density;
     }
 
-    public synchronized static ViewCalculator getInstance(Context context) {
-        if (mInstance == null) {
-            mInstance = new ViewCalculator(context);
-        }
-        return mInstance;
+    public static double dpToPX(Context context, double dp) {
+        return dp * context.getResources().getDisplayMetrics().density;
     }
 
-    public static double pxToDP(double px) {
-        return px / mContext.getResources().getDisplayMetrics().density;
-    }
-
-    public static double dpToPX(double dp) {
-        return dp * mContext.getResources().getDisplayMetrics().density;
-    }
-
-    public static int getWindowHeight() {
-        WindowManager windowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+    public static int getWindowHeight(Context context) {
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = windowManager.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         return size.y;
     }
 
+    public ViewCalculator() {}
 }

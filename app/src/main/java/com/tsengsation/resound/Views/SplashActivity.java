@@ -6,14 +6,14 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import com.parse.ParseAnalytics;
-import com.tsengsation.resound.Events.OnDownloadCompletedListener;
 import com.tsengsation.resound.Parse.ParseResound;
+import com.tsengsation.resound.Parse.ParseResound.OnDownloadCompletedListener;
 import com.tsengsation.resound.R;
 
 /**
- * Created by jonathantseng on 1/28/15.
+ * Initial landing page to show while downloading data in background.
  */
-public class SplashActivity extends Activity {
+public class SplashActivity extends Activity implements OnDownloadCompletedListener {
 
     private ParseResound mParseResound;
 
@@ -24,18 +24,18 @@ public class SplashActivity extends Activity {
 
         ParseAnalytics.trackAppOpenedInBackground(getIntent());
         mParseResound = ParseResound.getInstance();
-        mParseResound.setOnDownloadCompleted(new OnDownloadCompletedListener() {
-            @Override
-            public void onSuccess() {
-                startActivity(new Intent(SplashActivity.this, MainActivity.class));
-            }
-
-            @Override
-            public void onFail() {
-                // TODO dialog:
-                Toast.makeText(getApplicationContext(), "download failed", Toast.LENGTH_LONG).show();
-            }
-        });
+        mParseResound.setOnDownloadCompleted(this);
         mParseResound.downloadData();
+    }
+
+    @Override
+    public void onSuccess() {
+        startActivity(new Intent(SplashActivity.this, MainActivity.class));
+    }
+
+    @Override
+    public void onFail() {
+        // TODO dialog:
+        Toast.makeText(getApplicationContext(), "Download failed.", Toast.LENGTH_LONG).show();
     }
 }

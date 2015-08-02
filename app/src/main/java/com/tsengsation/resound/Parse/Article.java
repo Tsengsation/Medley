@@ -3,71 +3,55 @@ package com.tsengsation.resound.Parse;
 import java.util.Date;
 
 /**
- * Created by jonathantseng on 1/21/15.
+ * Struct for article info.
  */
 public class Article {
-    private ArticleType mType;
-    private String mImageUrl;
-    private Date mDate;
-    private String mText;
-    private String mTitle;
-    private String mSourceName;
-    private String mSourceUrl;
-    private long mLikes;
-    private String mUrl;
-    private Author mAuthor;
+    private final String NEWS = "news";
+    private final String ALBUMS = "albums";
+    private final String CONCERTS = "concerts";
+    private final String PLAYLISTS = "playlists";
 
-    public Article(ArticleType mType, String mImageUrl, Date mDate, String mText, String mTitle,
-                   String mSourceName, String mSourceUrl, long mLikes, String mUrl, Author mAuthor) {
-        this.mType = mType;
-        this.mImageUrl = mImageUrl;
-        this.mDate = mDate;
-        this.mText = mText;
-        this.mTitle = mTitle;
-        this.mSourceName = mSourceName;
-        this.mSourceUrl = mSourceUrl;
-        this.mLikes = mLikes;
-        this.mUrl = mUrl;
-        this.mAuthor = mAuthor;
+    public final int TYPE_NEWS = 1;
+    public final int TYPE_ALBUMS = 2;
+    public final int TYPE_CONCERTS = 3;
+    public final int TYPE_PLAYLISTS = 4;
+
+    public final int type;
+    public final String imageUrl;
+    public final Date date;
+    public final String text;
+    public final String title;
+    public final String sourceName;
+    public final String sourceUrl;
+    public final long numLikes;
+    public final String url;
+    public final Author author;
+
+    public Article(String type, String imageUrl, Date date, String text, String title,
+                   String sourceName, String sourceUrl, long numLikes, String url, Author author) {
+        this.type = typeToInt(type);
+        this.imageUrl = imageUrl;
+        this.date = date;
+        this.text = text;
+        this.title = title;
+        this.sourceName = sourceName;
+        this.sourceUrl = sourceUrl;
+        this.numLikes = numLikes;
+        this.url = url;
+        this.author = author;
     }
 
-    public ArticleType getType() {
-        return mType;
-    }
-
-    public Date getDate() {
-        return mDate;
-    }
-
-    public String getText() {
-        return mText;
-    }
-
-    public String getTitle() {
-        return mTitle;
-    }
-
-    public Author getAuthor() {
-        return mAuthor;
-    }
-
-    public String getImageUrl() {
-        return mImageUrl;
-    }
-
-    public String getImageSourceName() {
-        return mSourceName;
-    }
-
-    public String getImageSourceUrl() {
-        return mSourceUrl;
-    }
-
-    public String getResourUrl() {
-        return mUrl;
-    }
-
-    public long getNumLikes() {
-        return mLikes;
+    private int typeToInt(String type) {
+        switch (type.toLowerCase()) {
+            case NEWS:
+                return TYPE_NEWS;
+            case ALBUMS:
+                return TYPE_ALBUMS;
+            case CONCERTS:
+                return TYPE_CONCERTS;
+            case PLAYLISTS:
+            default:
+                return TYPE_PLAYLISTS;
+        }
     }
 }

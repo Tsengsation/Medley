@@ -9,7 +9,7 @@ import android.widget.TextView;
 import com.tsengsation.resound.R;
 
 /**
- * Created by jonathantseng on 3/26/15.
+ * Navigation bar for Resound application.
  */
 public class ResoundNavBar extends LinearLayout {
 

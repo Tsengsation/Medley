@@ -1,7 +1,7 @@
 package com.tsengsation.resound.Parse;
 
 /**
- * Created by jonathantseng on 1/29/15.
+ * Exception thrown when article index requested is out of bounds of the article list.
  */
 public class ArticleIndexOutOfBoundsException extends Exception {
 

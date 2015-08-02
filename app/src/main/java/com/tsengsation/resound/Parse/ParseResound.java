@@ -11,7 +11,6 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
-import com.tsengsation.resound.Events.OnDownloadCompletedListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by jonathantseng on 1/21/15.
+ * Singleton class that represents Application and mediator for all parse calls.
  */
 public class ParseResound extends Application {
 
@@ -46,24 +45,65 @@ public class ParseResound extends Application {
     private ArticleLibrary mArticleLibrary;
     private ParseQuery mCurrentQuery;
 
+    private final FindCallback<ParseObject> AUTHOR_CALLBACK = new FindCallback<ParseObject>() {
+        public void done(List<ParseObject> authors, ParseException e) {
+            if (e == null) {
+                Log.d("Authors", "Retrieved " + authors.size() + " authors");
+                for (ParseObject authorObj : authors) {
+                    Author author = new Author(
+                            authorObj.getParseFile(AUTHOR_IMAGE_KEY).getUrl(),
+                            authorObj.getString(AUTHOR_NAME_KEY));
+                    mAuthorsMap.put(authorObj.getObjectId(), author);
+                }
+                pullAllArticles();
+            } else {
+                Log.d("Authors", "Error: " + e.getMessage());
+                if (mDownloadCompletedListener != null) {
+                    mDownloadCompletedListener.onFail();
+                }
+            }
+        }
+    };
+
+    private final FindCallback<ParseObject> ARTICLE_CALLBACK = new FindCallback<ParseObject>() {
+        public void done(List<ParseObject> articles, ParseException e) {
+            List<Article> foundArticles = new ArrayList<>();
+            if (e == null) {
+                Log.d("Articles", "Retrieved " + articles.size() + " articles");
+                for (ParseObject articleObj : articles) {
+                    Article article = new Article(
+                            articleObj.getString(ARTICLE_TYPE_KEY),
+                            articleObj.getParseFile(ARTICLE_IMAGE_KEY).getUrl(),
+                            articleObj.getDate(ARTICLE_DATE_KEY),
+                            articleObj.getString(ARTICLE_TEXT_KEY),
+                            articleObj.getString(ARTICLE_TITLE_KEY),
+                            articleObj.getString(ARTICLE_IMAGE_SOURCENAME_KEY),
+                            articleObj.getString(ARTICLE_IMAGE_SOURCEURL_KEY),
+                            articleObj.getNumber(ARTICLE_LIKES_KEY).longValue(),
+                            articleObj.getString(ARTICLE_URL_KEY),
+                            mAuthorsMap.get(articleObj.getString(ARTICLE_AUTHOR_ID_KEY)));
+                    foundArticles.add(article);
+                }
+                mArticleLibrary = new ArticleLibrary(foundArticles);
+                mCurrentQuery = null;
+                if (mDownloadCompletedListener != null) {
+                    mDownloadCompletedListener.onSuccess();
+                }
+            } else {
+                Log.d("Articles", "Error: " + e.getMessage());
+                if (mDownloadCompletedListener != null) {
+                    mDownloadCompletedListener.onFail();
+                }
+            }
+        }
+    };
+
     /**
      * DO NOT EVER CALL THIS:
      * Public in order for android to compile and run
      */
     public ParseResound() {
         mInstance = this;
-        // download completed listener that does nothing
-        mDownloadCompletedListener = new OnDownloadCompletedListener() {
-            @Override
-            public void onSuccess() {
-
-            }
-
-            @Override
-            public void onFail() {
-
-            }
-        };
     }
 
     public void downloadData() {
@@ -90,7 +130,7 @@ public class ParseResound extends Application {
         return mArticleLibrary.getCount();
     }
 
-    public void filterArticles(ArticleType type) {
+    public void filterArticles(int type) {
         mArticleLibrary.filterByType(type);
     }
 
@@ -98,57 +138,14 @@ public class ParseResound extends Application {
         mAuthorsMap = new HashMap<>();
         ParseQuery<ParseObject> query = ParseQuery.getQuery(AUTHOR_TABLE_KEY);
         mCurrentQuery = query;
-        query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> authors, ParseException e) {
-                if (e == null) {
-                    Log.d("Authors", "Retrieved " + authors.size() + " authors");
-                    for (ParseObject authorObj : authors) {
-                        Author author = new Author(
-                                authorObj.getParseFile(AUTHOR_IMAGE_KEY).getUrl(),
-                                authorObj.getString(AUTHOR_NAME_KEY));
-                        mAuthorsMap.put(authorObj.getObjectId(), author);
-                    }
-                    pullAllArticles();
-                } else {
-                    Log.d("Authors", "Error: " + e.getMessage());
-                    mDownloadCompletedListener.onFail();
-                }
-            }
-        });
+        query.findInBackground(AUTHOR_CALLBACK);
     }
 
     private void pullAllArticles() {
-        final List<Article> foundArticles = new ArrayList<>();
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ARTICLE_TABLE_KEY);
         mCurrentQuery = query;
         query.orderByAscending(ARTICLE_DATE_KEY);
-        query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> articles, ParseException e) {
-                if (e == null) {
-                    Log.d("Articles", "Retrieved " + articles.size() + " articles");
-                    for (ParseObject articleObj : articles) {
-                        Article article = new Article(
-                                ArticleType.createType(articleObj.getString(ARTICLE_TYPE_KEY)),
-                                articleObj.getParseFile(ARTICLE_IMAGE_KEY).getUrl(),
-                                articleObj.getDate(ARTICLE_DATE_KEY),
-                                articleObj.getString(ARTICLE_TEXT_KEY),
-                                articleObj.getString(ARTICLE_TITLE_KEY),
-                                articleObj.getString(ARTICLE_IMAGE_SOURCENAME_KEY),
-                                articleObj.getString(ARTICLE_IMAGE_SOURCEURL_KEY),
-                                articleObj.getNumber(ARTICLE_LIKES_KEY).longValue(),
-                                articleObj.getString(ARTICLE_URL_KEY),
-                                mAuthorsMap.get(articleObj.getString(ARTICLE_AUTHOR_ID_KEY)));
-                        foundArticles.add(article);
-                    }
-                    mArticleLibrary = new ArticleLibrary(foundArticles);
-                    mCurrentQuery = null;
-                    mDownloadCompletedListener.onSuccess();
-                } else {
-                    Log.d("Articles", "Error: " + e.getMessage());
-                    mDownloadCompletedListener.onFail();
-                }
-            }
-        });
+        query.findInBackground(ARTICLE_CALLBACK);
     }
 
     @Override
@@ -171,7 +168,8 @@ public class ParseResound extends Application {
         Parse.enableLocalDatastore(this);
 
         // Add your initialization code here
-        Parse.initialize(this, "gqrp4017xBh0MVxkZ7RdbTZJkOhxjGF2QKVxMqCm", "uKREO45z7PlpPp72MUp3XUKvHPt8K3MQuwD2VyU8");
+        Parse.initialize(this, "gqrp4017xBh0MVxkZ7RdbTZJkOhxjGF2QKVxMqCm",
+                "uKREO45z7PlpPp72MUp3XUKvHPt8K3MQuwD2VyU8");
 
         ParseUser.enableAutomaticUser();
         ParseACL defaultACL = new ParseACL();
@@ -180,4 +178,13 @@ public class ParseResound extends Application {
         ParseACL.setDefaultACL(defaultACL, true);
     }
 
+    /**
+     * Listener for parse data query download completions.
+     */
+    public static interface OnDownloadCompletedListener {
+
+        public void onSuccess();
+
+        public void onFail();
+    }
 }

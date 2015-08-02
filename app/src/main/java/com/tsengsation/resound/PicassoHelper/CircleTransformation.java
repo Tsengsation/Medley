@@ -9,7 +9,7 @@ import com.squareup.picasso.Transformation;
 
 
 /**
- * Created by jonathantseng on 1/27/15.
+ * Circular crop effect that can be applied to an image loaded with Picasso.
  */
 public class CircleTransformation implements Transformation {
     @Override

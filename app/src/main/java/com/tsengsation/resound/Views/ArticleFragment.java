@@ -11,29 +11,31 @@ import android.text.format.DateFormat;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.tsengsation.resound.Events.OnFlingListener;
-import com.tsengsation.resound.Events.OnImageLoadedListener;
-import com.tsengsation.resound.Events.OnScrolledListener;
 import com.tsengsation.resound.Parse.Article;
 import com.tsengsation.resound.Parse.ParseResound;
 import com.tsengsation.resound.PicassoHelper.CircleTransformation;
 import com.tsengsation.resound.R;
 import com.tsengsation.resound.ViewHelpers.ImageUrlViewPair;
 import com.tsengsation.resound.ViewHelpers.MultiImageLoader;
+import com.tsengsation.resound.ViewHelpers.MultiImageLoader.OnImageLoadedListener;
 import com.tsengsation.resound.ViewHelpers.ObservableScrollView;
+import com.tsengsation.resound.ViewHelpers.ObservableScrollView.OnFlingListener;
+import com.tsengsation.resound.ViewHelpers.ObservableScrollView.OnScrolledListener;
 import com.tsengsation.resound.ViewHelpers.ViewCalculator;
 
 /**
- * Created by jonathantseng on 1/29/15.
+ * Fragment that hosts an article view.
  */
-public class ArticleFragment extends Fragment {
+public class ArticleFragment extends Fragment implements OnClickListener, OnImageLoadedListener {
 
     private final static String CSS_TAG = "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\" />";
     private final static String COVER_IMAGE_TEXT = "Cover Image Source:";
@@ -92,11 +94,11 @@ public class ArticleFragment extends Fragment {
         mArticle = article;
     }
 
-    public void setOnScrolled(OnScrolledListener listener) {
+    public void setOnScrolled(ObservableScrollView.OnScrolledListener listener) {
         mOnScrolledListener = listener;
     }
 
-    public void setOnFlung(OnFlingListener listener) {
+    public void setOnFlung(ObservableScrollView.OnFlingListener listener) {
         mOnFlingListener = listener;
     }
 
@@ -104,26 +106,31 @@ public class ArticleFragment extends Fragment {
         mArticleScrollView.setOnScrolled(mOnScrolledListener);
         mArticleScrollView.setOnFlung(mOnFlingListener);
         mArticleWebView.setBackgroundColor(Color.TRANSPARENT);
-        mArticleTitleLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mArticleScrollView.getScrollY() < 5) {
-                    new CountDownTimer(SCROLL_MS, SCROLL_WAIT) {
-                        @Override
-                        public void onTick(long millisUntilFinished) {
-                            mArticleScrollView.smoothScrollTo(0, (int) ((SCROLL_MS - millisUntilFinished) / ((float) SCROLL_MS) * mOffset));
-                        }
-
-                        @Override
-                        public void onFinish() {
-                            mArticleScrollView.smoothScrollTo(0, mOffset);
-                        }
-                    }.start();
-                }
-            }
-        });
+        mArticleTitleLayout.setOnClickListener(this);
         loadArticle();
-        mArticleLayout.setPadding(0, ViewCalculator.getWindowHeight(), 0, (int) ViewCalculator.dpToPX(5));
+        mArticleLayout.setPadding(0, ViewCalculator.getWindowHeight(getActivity()), 0,
+                (int) ViewCalculator.dpToPX(getActivity(), 5));
+    }
+
+    @Override
+    public void onClick(View v) {
+        // Article title bar.
+        if (v.equals(mArticleTitleLayout)) {
+            final int beginY = mArticleScrollView.getScrollY();
+            new CountDownTimer(SCROLL_MS, SCROLL_WAIT) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    mArticleScrollView.smoothScrollTo(0, beginY +
+                            (int) ((SCROLL_MS - millisUntilFinished)
+                                    / ((float) SCROLL_MS) * (mOffset - beginY)));
+                }
+
+                @Override
+                public void onFinish() {
+                    mArticleScrollView.smoothScrollTo(0, mOffset);
+                }
+            }.start();
+        }
     }
 
     public void setHtml(TextView textView, String text) {
@@ -133,7 +140,7 @@ public class ArticleFragment extends Fragment {
 
     public String convertArticleToHtml(Article article) {
         return String.format("<html> %s <body> <div> %s <hr/> <pre>%s <a href=\"%s\">%s</a></pre> </div> </body> </html>",
-                CSS_TAG, article.getText(), COVER_IMAGE_TEXT, article.getImageSourceUrl(), article.getImageSourceName());
+                CSS_TAG, article.text, COVER_IMAGE_TEXT, article.sourceUrl, article.sourceName);
     }
 
     private void resetScroll() {
@@ -142,41 +149,47 @@ public class ArticleFragment extends Fragment {
 
     public void loadArticle() {
         resetScroll();
-        setHtml(mAuthorName, String.format("%s %s", "by ", mArticle.getAuthor().getName()));
-        mArticleTitle.setText(mArticle.getTitle());
-        mArticleWebView.loadDataWithBaseURL(ASSET_URL, convertArticleToHtml(mArticle), HTML, ENCODING, null);
-        String dateString = DateFormat.format("M/d/yyyy, h:mm a", mArticle.getDate()).toString();
+        setHtml(mAuthorName, String.format("%s %s", "by ", mArticle.author.name));
+        mArticleTitle.setText(mArticle.title);
+        mArticleWebView.loadDataWithBaseURL(ASSET_URL, convertArticleToHtml(mArticle), HTML,
+                ENCODING, null);
+        String dateString = DateFormat.format("M/d/yyyy, h:mm a", mArticle.date).toString();
         setHtml(mArticleDate, dateString);
 
         MultiImageLoader multiImageLoader = new MultiImageLoader(mContext);
-        multiImageLoader.setOnImageLoaded(new OnImageLoadedListener() {
+        multiImageLoader.setOnImageLoaded(this);
+        multiImageLoader.attachImages(new ImageUrlViewPair(mArticle.author.imageUrl,
+                mAuthorImageView, new CircleTransformation()));
+    }
+
+    @Override
+    public void onSuccess() {
+        // TODO probably quit out of loading screen or something
+        // i.e., start with loading screen
+        // Initialize article offset.
+        final ViewTreeObserver titleObserver = mArticleTitleLayout.getViewTreeObserver();
+        final int windowHeight = ViewCalculator.getWindowHeight(getActivity());
+        final int offsetPadding = (int) ViewCalculator.dpToPX(getActivity(), 26);
+        final int layoutPadding = (int) ViewCalculator.dpToPX(getActivity(), 5);
+        titleObserver.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
             @Override
-            public void onSuccess() {
-                // TODO probably quit out of loading screen or something
-                // i.e., start with loading screen
-                final ViewTreeObserver titleObserver = mArticleTitleLayout.getViewTreeObserver();
-                titleObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            public void onGlobalLayout() {
+                final ViewTreeObserver authorObserver = mArticleAuthorLayout.getViewTreeObserver();
+                authorObserver.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        final ViewTreeObserver authorObserver = mArticleAuthorLayout.getViewTreeObserver();
-                        authorObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                            @Override
-                            public void onGlobalLayout() {
-                                mOffset = ViewCalculator.getWindowHeight() - (mArticleTitleLayout.getMeasuredHeight() + mArticleAuthorLayout.getMeasuredHeight())
-                                        - (int) ViewCalculator.dpToPX(26);
-                                mArticleLayout.setPadding(0, mOffset, 0, (int) ViewCalculator.dpToPX(5));
-                            }
-                        });
+                        mOffset = windowHeight - (mArticleTitleLayout.getMeasuredHeight()
+                                + mArticleAuthorLayout.getMeasuredHeight()) - offsetPadding;
+                        mArticleLayout.setPadding(0, mOffset, 0, layoutPadding);
                     }
                 });
             }
         });
-        multiImageLoader.attachImages(
-                new ImageUrlViewPair(mArticle.getAuthor().getImageUrl(), mAuthorImageView, new CircleTransformation()));
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_article, null);
         mParseResound = ParseResound.getInstance();
         initViewReferences(view);

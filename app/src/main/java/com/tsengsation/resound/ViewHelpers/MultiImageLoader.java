@@ -3,10 +3,9 @@ package com.tsengsation.resound.ViewHelpers;
 import android.content.Context;
 
 import com.squareup.picasso.Picasso;
-import com.tsengsation.resound.Events.OnImageLoadedListener;
 
 /**
- * Created by jonathantseng on 1/26/15.
+ * Image loader that loads multiple images into views. Supports callback on all images loaded.
  */
 public class MultiImageLoader {
 
@@ -19,10 +18,15 @@ public class MultiImageLoader {
 
     public void attachImages(ImageUrlViewPair... pairs) {
         for (ImageUrlViewPair pair : pairs) {
-            if (pair.getTransformation() == null) {
-                Picasso.with(mContext).load(pair.getUrl()).into(pair.getImageView());
+            if (pair.transformation == null) {
+                Picasso.with(mContext)
+                        .load(pair.url)
+                        .into(pair.imageView);
             } else {
-                Picasso.with(mContext).load(pair.getUrl()).transform(pair.getTransformation()).into(pair.getImageView());
+                Picasso.with(mContext)
+                        .load(pair.url)
+                        .transform(pair.transformation)
+                        .into(pair.imageView);
             }
         }
         if (mOnImageLoadedListener != null) {
@@ -34,4 +38,11 @@ public class MultiImageLoader {
         mOnImageLoadedListener = listener;
     }
 
+    /**
+     * Listener for parse image loading completions.
+     */
+    public static interface OnImageLoadedListener {
+
+        public void onSuccess();
+    }
 }

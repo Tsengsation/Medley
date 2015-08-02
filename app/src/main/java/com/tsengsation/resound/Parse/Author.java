@@ -1,24 +1,15 @@
 package com.tsengsation.resound.Parse;
 
 /**
- * Created by jonathantseng on 1/21/15.
+ * Struct for author info.
  */
 public class Author {
 
-    private String mImageUrl;
-    private String mName;
+    public final String imageUrl;
+    public final String name;
 
-    public Author(String mImageUrl, String mName) {
-        this.mImageUrl = mImageUrl;
-        this.mName = mName;
+    public Author(String imageUrl, String name) {
+        this.imageUrl = imageUrl;
+        this.name = name;
     }
-
-    public String getImageUrl() {
-        return mImageUrl;
-    }
-
-    public String getName() {
-        return mName;
-    }
-
 }

@@ -22,9 +22,9 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:21.0.3'
-    compile files('/Users/jonathantseng/Documents/Development/GitProjects/Resound/libs/Parse-1.8.1.jar')
-    compile files('/Users/jonathantseng/Documents/Development/GitProjects/Resound/libs/bolts-android-1.1.4.jar')
-    compile files('/Users/jonathantseng/Documents/Development/GitProjects/Resound/libs/ParseCrashReporting-1.8.1.jar')
+    compile files('/Users/jonathantseng/Dev/Android/Resound/libs/Parse-1.8.1.jar')
+    compile files('/Users/jonathantseng/Dev/Android/Resound/libs/bolts-android-1.1.4.jar')
+    compile files('/Users/jonathantseng/Dev/Android/Resound/libs/ParseCrashReporting-1.8.1.jar')
     compile 'com.squareup.picasso:picasso:2.4.0'
     compile 'com.android.support:cardview-v7:21.0.+'
 }

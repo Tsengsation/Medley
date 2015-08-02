@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Created by jonathantseng on 3/25/15.
+ * Library of article objects.
  */
 public class ArticleLibrary {
 
@@ -18,7 +18,7 @@ public class ArticleLibrary {
         Collections.sort(mArticles, new Comparator<Article>() {
             @Override
             public int compare(Article art1, Article art2) {
-                return art2.getDate().compareTo(art1.getDate());
+                return art2.date.compareTo(art1.date);
             }
         });
         mFilteredArticles = new ArrayList<>(mArticles);
@@ -35,10 +35,10 @@ public class ArticleLibrary {
         return mFilteredArticles.get(position);
     }
 
-    public void filterByType(ArticleType type) {
+    public void filterByType(int articleType) {
         mFilteredArticles = new ArrayList<>();
         for (Article article : mArticles) {
-            if (article.getType().equals(type)) {
+            if (article.type == articleType) {
                 mFilteredArticles.add(article);
             }
         }

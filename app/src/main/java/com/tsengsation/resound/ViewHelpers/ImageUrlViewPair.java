@@ -5,36 +5,17 @@ import android.widget.ImageView;
 import com.squareup.picasso.Transformation;
 
 /**
- * Created by jonathantseng on 1/27/15.
+ * Struct to wrap info on image url and view to apply image url to.
  */
 public class ImageUrlViewPair {
 
-    private String mUrl;
-    private ImageView mImageView;
-    private Transformation mTransformation;
+    public final String url;
+    public final ImageView imageView;
+    public final Transformation transformation;
 
-    public ImageUrlViewPair(String mUrl, ImageView mImageView) {
-        this.mUrl = mUrl;
-        this.mImageView = mImageView;
-        this.mTransformation = null;
+    public ImageUrlViewPair(String url, ImageView imageView, Transformation transformation) {
+        this.url = url;
+        this.imageView = imageView;
+        this.transformation = transformation;
     }
-
-    public ImageUrlViewPair(String mUrl, ImageView mImageView, Transformation mTransformation) {
-        this.mUrl = mUrl;
-        this.mImageView = mImageView;
-        this.mTransformation = mTransformation;
-    }
-
-    public Transformation getTransformation() {
-        return mTransformation;
-    }
-
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public ImageView getImageView() {
-        return mImageView;
-    }
-
 }

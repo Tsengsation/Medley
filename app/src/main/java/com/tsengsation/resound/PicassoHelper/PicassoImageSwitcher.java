@@ -10,7 +10,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 /**
- * Created by jonathantseng on 1/29/15.
+ * Extension of ImageSwitcher that can use Picasso to load images.
  */
 public class PicassoImageSwitcher implements Target {
 
