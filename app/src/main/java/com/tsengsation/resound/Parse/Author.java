@@ -1,9 +1,11 @@
 package com.tsengsation.resound.Parse;
 
+import java.io.Serializable;
+
 /**
  * Struct for author info.
  */
-public class Author {
+public class Author implements Serializable {
 
     public final String imageUrl;
     public final String name;

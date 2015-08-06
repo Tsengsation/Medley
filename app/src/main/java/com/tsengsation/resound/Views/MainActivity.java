@@ -222,7 +222,7 @@ public class MainActivity extends FragmentActivity implements ViewFactory, OnPag
         public Fragment getItem(int position) {
             Fragment fragment = null;
             try {
-                fragment = ArticleFragment.newInstance(mContext,
+                fragment = ArticleFragment.newInstance(
                         ParseResound.getInstance().getArticle(position));
                 final ArticleFragment articleFragment = (ArticleFragment) fragment;
                 articleFragment.setOnScrolled(this);

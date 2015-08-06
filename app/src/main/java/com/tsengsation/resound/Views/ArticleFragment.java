@@ -1,7 +1,8 @@
 package com.tsengsation.resound.Views;
 
-import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
@@ -16,12 +17,15 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.webkit.WebView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.tsengsation.resound.Parse.Article;
 import com.tsengsation.resound.Parse.ParseResound;
+import com.tsengsation.resound.Parse.ParseResound.OnUpdateCompletedListener;
 import com.tsengsation.resound.PicassoHelper.CircleTransformation;
 import com.tsengsation.resound.R;
 import com.tsengsation.resound.ViewHelpers.ImageUrlViewPair;
@@ -35,7 +39,11 @@ import com.tsengsation.resound.ViewHelpers.ViewCalculator;
 /**
  * Fragment that hosts an article view.
  */
-public class ArticleFragment extends Fragment implements OnClickListener, OnImageLoadedListener {
+public class ArticleFragment extends Fragment implements OnClickListener, OnImageLoadedListener,
+        OnUpdateCompletedListener<Article> {
+
+    // Argument bundle keys.
+    private final static String KEY_ARTICLE = "key_article";
 
     private final static String CSS_TAG = "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\" />";
     private final static String COVER_IMAGE_TEXT = "Cover Image Source:";
@@ -58,17 +66,23 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
     private LinearLayout mArticleTitleLayout;
     private LinearLayout mArticleAuthorLayout;
     private ObservableScrollView mArticleScrollView;
+    private TextView mLikesText;
+    private ImageButton mLikesButton;
+    private ImageButton mShareButton;
 
-    private Context mContext;
     private Article mArticle;
     private int mOffset;
     private OnScrolledListener mOnScrolledListener;
     private OnFlingListener mOnFlingListener;
 
-    public static ArticleFragment newInstance(Context context, Article article) {
+    public static ArticleFragment newInstance(Article article) {
         ArticleFragment fragment = new ArticleFragment();
-        fragment.setContext(context);
-        fragment.setArticle(article);
+
+        fragment.mArticle = article;
+        Bundle args = new Bundle();
+        args.putParcelable(KEY_ARTICLE, article);
+        fragment.setArguments(args);
+
         return fragment;
     }
 
@@ -84,32 +98,6 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
 
     public Article getArticle() {
         return mArticle;
-    }
-
-    public void setContext(Context context) {
-        mContext = context;
-    }
-
-    public void setArticle(Article article) {
-        mArticle = article;
-    }
-
-    public void setOnScrolled(ObservableScrollView.OnScrolledListener listener) {
-        mOnScrolledListener = listener;
-    }
-
-    public void setOnFlung(ObservableScrollView.OnFlingListener listener) {
-        mOnFlingListener = listener;
-    }
-
-    private void setUpView() {
-        mArticleScrollView.setOnScrolled(mOnScrolledListener);
-        mArticleScrollView.setOnFlung(mOnFlingListener);
-        mArticleWebView.setBackgroundColor(Color.TRANSPARENT);
-        mArticleTitleLayout.setOnClickListener(this);
-        loadArticle();
-        mArticleLayout.setPadding(0, ViewCalculator.getWindowHeight(getActivity()), 0,
-                (int) ViewCalculator.dpToPX(getActivity(), 5));
     }
 
     @Override
@@ -130,15 +118,57 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
                     mArticleScrollView.smoothScrollTo(0, mOffset);
                 }
             }.start();
+        } else if (v.equals(mLikesButton)) {
+            Article updatedArticle;
+            if (mArticle.prevLiked) {
+                // Unlike article.
+                updatedArticle = new Article(mArticle.id, mArticle.type, mArticle.imageUrl,
+                        mArticle.date, mArticle.text, mArticle.title, mArticle.sourceName,
+                        mArticle.sourceUrl, mArticle.numLikes - 1, mArticle.url, mArticle.author,
+                        !mArticle.prevLiked);
+            } else {
+                // Like article.
+                updatedArticle = new Article(mArticle.id, mArticle.type, mArticle.imageUrl,
+                        mArticle.date, mArticle.text, mArticle.title, mArticle.sourceName,
+                        mArticle.sourceUrl, mArticle.numLikes + 1, mArticle.url, mArticle.author,
+                        !mArticle.prevLiked);
+            }
+            mParseResound.updateArticle(mArticle, updatedArticle, this);
+        } else if (v.equals(mShareButton)) {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Resound");
+            String shareMsg = String.format("Check out this article at %s", mArticle.url);
+            shareIntent.putExtra(Intent.EXTRA_TEXT, shareMsg);
+            startActivity(Intent.createChooser(shareIntent, "Share via"));
         }
     }
 
-    public void setHtml(TextView textView, String text) {
+    @Override
+    public void onUpdateSuccess(Article updatedObject) {
+        mArticle = updatedObject;
+        updateLikesViews();
+    }
+
+    @Override
+    public void onUpdateFail(Exception e) {
+        Toast.makeText(getActivity(), "Connection failed", Toast.LENGTH_SHORT).show();
+    }
+
+    public void setOnScrolled(ObservableScrollView.OnScrolledListener listener) {
+        mOnScrolledListener = listener;
+    }
+
+    public void setOnFlung(ObservableScrollView.OnFlingListener listener) {
+        mOnFlingListener = listener;
+    }
+
+    private void setHtml(TextView textView, String text) {
         textView.setText(Html.fromHtml(text));
         textView.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
-    public String convertArticleToHtml(Article article) {
+    private String convertArticleToHtml(Article article) {
         return String.format("<html> %s <body> <div> %s <hr/> <pre>%s <a href=\"%s\">%s</a></pre> </div> </body> </html>",
                 CSS_TAG, article.text, COVER_IMAGE_TEXT, article.sourceUrl, article.sourceName);
     }
@@ -147,7 +177,7 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
         mArticleScrollView.scrollTo(0, 0);
     }
 
-    public void loadArticle() {
+    private void loadArticle() {
         resetScroll();
         setHtml(mAuthorName, String.format("%s %s", "by ", mArticle.author.name));
         mArticleTitle.setText(mArticle.title);
@@ -156,14 +186,15 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
         String dateString = DateFormat.format("M/d/yyyy, h:mm a", mArticle.date).toString();
         setHtml(mArticleDate, dateString);
 
-        MultiImageLoader multiImageLoader = new MultiImageLoader(mContext);
+        MultiImageLoader multiImageLoader = new MultiImageLoader(
+                getActivity().getApplicationContext());
         multiImageLoader.setOnImageLoaded(this);
         multiImageLoader.attachImages(new ImageUrlViewPair(mArticle.author.imageUrl,
                 mAuthorImageView, new CircleTransformation()));
     }
 
     @Override
-    public void onSuccess() {
+    public void onImageLoaded() {
         // TODO probably quit out of loading screen or something
         // i.e., start with loading screen
         // Initialize article offset.
@@ -187,10 +218,15 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
         });
     }
 
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_article, null);
+        if (savedInstanceState != null) {
+            mArticle = savedInstanceState.getParcelable(KEY_ARTICLE);
+        }
         mParseResound = ParseResound.getInstance();
         initViewReferences(view);
         setUpView();
@@ -207,5 +243,29 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
         mArticleTitleLayout = (LinearLayout) view.findViewById(R.id.article_header);
         mArticleAuthorLayout = (LinearLayout) view.findViewById(R.id.article_info);
         mArticleScrollView = (ObservableScrollView) view.findViewById(R.id.article_scroll);
+        mLikesText = (TextView) view.findViewById(R.id.likes_text);
+        mLikesButton = (ImageButton) view.findViewById(R.id.likes_button);
+        mShareButton = (ImageButton) view.findViewById(R.id.share_button);
+    }
+
+    private void setUpView() {
+        mArticleScrollView.setOnScrolled(mOnScrolledListener);
+        mArticleScrollView.setOnFlung(mOnFlingListener);
+        mArticleWebView.setBackgroundColor(Color.TRANSPARENT);
+        mArticleTitleLayout.setOnClickListener(this);
+        loadArticle();
+        mArticleLayout.setPadding(0, ViewCalculator.getWindowHeight(getActivity()), 0,
+                (int) ViewCalculator.dpToPX(getActivity(), 5));
+        updateLikesViews();
+        mLikesButton.setOnClickListener(this);
+        mShareButton.setOnClickListener(this);
+    }
+
+    private void updateLikesViews() {
+        Drawable likeDrawable = mArticle.prevLiked
+                ? getResources().getDrawable(R.drawable.ic_favorite_fill)
+                : getResources().getDrawable(R.drawable.ic_favorite_border);
+        mLikesButton.setImageDrawable(likeDrawable);
+        mLikesText.setText(Long.toString(mArticle.numLikes));
     }
 }

@@ -11,6 +11,7 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +46,7 @@ public class ParseResound extends Application {
     private ArticleLibrary mArticleLibrary;
     private ParseQuery mCurrentQuery;
 
-    private final FindCallback<ParseObject> AUTHOR_CALLBACK = new FindCallback<ParseObject>() {
+    private final FindCallback<ParseObject> GET_AUTHORS_CALLBACK = new FindCallback<ParseObject>() {
         public void done(List<ParseObject> authors, ParseException e) {
             if (e == null) {
                 Log.d("Authors", "Retrieved " + authors.size() + " authors");
@@ -59,19 +60,21 @@ public class ParseResound extends Application {
             } else {
                 Log.d("Authors", "Error: " + e.getMessage());
                 if (mDownloadCompletedListener != null) {
-                    mDownloadCompletedListener.onFail();
+                    mDownloadCompletedListener.onDownloadFail();
                 }
             }
         }
     };
 
-    private final FindCallback<ParseObject> ARTICLE_CALLBACK = new FindCallback<ParseObject>() {
-        public void done(List<ParseObject> articles, ParseException e) {
+    private final FindCallback<ParseObject> GET_ARTICLES_CALLBACK = new FindCallback<ParseObject>() {
+        public void done(List<ParseObject> parseArticles, ParseException e) {
             List<Article> foundArticles = new ArrayList<>();
+            Map<String, ParseObject> parseArticleMap = new HashMap<>();
             if (e == null) {
-                Log.d("Articles", "Retrieved " + articles.size() + " articles");
-                for (ParseObject articleObj : articles) {
+                Log.d("Articles", "Retrieved " + parseArticles.size() + " articles");
+                for (ParseObject articleObj : parseArticles) {
                     Article article = new Article(
+                            articleObj.getObjectId(),
                             articleObj.getString(ARTICLE_TYPE_KEY),
                             articleObj.getParseFile(ARTICLE_IMAGE_KEY).getUrl(),
                             articleObj.getDate(ARTICLE_DATE_KEY),
@@ -81,18 +84,20 @@ public class ParseResound extends Application {
                             articleObj.getString(ARTICLE_IMAGE_SOURCEURL_KEY),
                             articleObj.getNumber(ARTICLE_LIKES_KEY).longValue(),
                             articleObj.getString(ARTICLE_URL_KEY),
-                            mAuthorsMap.get(articleObj.getString(ARTICLE_AUTHOR_ID_KEY)));
+                            mAuthorsMap.get(articleObj.getString(ARTICLE_AUTHOR_ID_KEY)),
+                            false /* previously liked */);
                     foundArticles.add(article);
+                    parseArticleMap.put(articleObj.getObjectId(), articleObj);
                 }
-                mArticleLibrary = new ArticleLibrary(foundArticles);
+                mArticleLibrary = new ArticleLibrary(parseArticleMap, foundArticles);
                 mCurrentQuery = null;
                 if (mDownloadCompletedListener != null) {
-                    mDownloadCompletedListener.onSuccess();
+                    mDownloadCompletedListener.onDownloadSuccess();
                 }
             } else {
                 Log.d("Articles", "Error: " + e.getMessage());
                 if (mDownloadCompletedListener != null) {
-                    mDownloadCompletedListener.onFail();
+                    mDownloadCompletedListener.onDownloadFail();
                 }
             }
         }
@@ -122,6 +127,26 @@ public class ParseResound extends Application {
         return mInstance;
     }
 
+    public void updateArticle(Article article, final Article updatedArticle,
+                              final OnUpdateCompletedListener<Article> updateListener) {
+        ParseObject parseArticle = mArticleLibrary.getParseArticleObject(article.id);
+        if (article.numLikes != updatedArticle.numLikes) {
+            parseArticle.put(ARTICLE_LIKES_KEY, updatedArticle.numLikes);
+            // TODO: Update MAC address mapping (device list of likes)?
+            parseArticle.saveInBackground(new SaveCallback() {
+                @Override
+                public void done(ParseException e) {
+                    if (e == null) {
+                        mArticleLibrary.updateArticle(updatedArticle);
+                        updateListener.onUpdateSuccess(updatedArticle);
+                    } else {
+                        updateListener.onUpdateFail(e);
+                    }
+                }
+            });
+        }
+    }
+
     public Article getArticle(int position) throws ArticleIndexOutOfBoundsException {
         return mArticleLibrary.getArticle(position);
     }
@@ -138,14 +163,14 @@ public class ParseResound extends Application {
         mAuthorsMap = new HashMap<>();
         ParseQuery<ParseObject> query = ParseQuery.getQuery(AUTHOR_TABLE_KEY);
         mCurrentQuery = query;
-        query.findInBackground(AUTHOR_CALLBACK);
+        query.findInBackground(GET_AUTHORS_CALLBACK);
     }
 
     private void pullAllArticles() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ARTICLE_TABLE_KEY);
         mCurrentQuery = query;
         query.orderByAscending(ARTICLE_DATE_KEY);
-        query.findInBackground(ARTICLE_CALLBACK);
+        query.findInBackground(GET_ARTICLES_CALLBACK);
     }
 
     @Override
@@ -181,10 +206,20 @@ public class ParseResound extends Application {
     /**
      * Listener for parse data query download completions.
      */
-    public static interface OnDownloadCompletedListener {
+    public interface OnDownloadCompletedListener {
 
-        public void onSuccess();
+        public void onDownloadSuccess();
 
-        public void onFail();
+        public void onDownloadFail();
+    }
+
+    /**
+     * Listener for parse data query update completions.
+     */
+    public interface OnUpdateCompletedListener<T> {
+
+        public void onUpdateSuccess(T updatedObject);
+
+        public void onUpdateFail(Exception e);
     }
 }

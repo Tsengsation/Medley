@@ -30,7 +30,7 @@ public class MultiImageLoader {
             }
         }
         if (mOnImageLoadedListener != null) {
-            mOnImageLoadedListener.onSuccess();
+            mOnImageLoadedListener.onImageLoaded();
         }
     }
 
@@ -43,6 +43,6 @@ public class MultiImageLoader {
      */
     public static interface OnImageLoadedListener {
 
-        public void onSuccess();
+        public void onImageLoaded();
     }
 }

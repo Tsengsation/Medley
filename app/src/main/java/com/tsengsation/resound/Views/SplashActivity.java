@@ -29,12 +29,12 @@ public class SplashActivity extends Activity implements OnDownloadCompletedListe
     }
 
     @Override
-    public void onSuccess() {
+    public void onDownloadSuccess() {
         startActivity(new Intent(SplashActivity.this, MainActivity.class));
     }
 
     @Override
-    public void onFail() {
+    public void onDownloadFail() {
         // TODO dialog:
         Toast.makeText(getApplicationContext(), "Download failed.", Toast.LENGTH_LONG).show();
     }
