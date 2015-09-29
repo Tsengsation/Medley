@@ -19,7 +19,7 @@ public class ResoundNavBar extends LinearLayout {
         super(context, attrs);
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        inflater.inflate(R.layout.view_resound_navbar, this, true);
+        inflater.inflate(R.layout.view_navbar, this, true);
         mTextView = (TextView) findViewById(R.id.navbar_text);
     }
 

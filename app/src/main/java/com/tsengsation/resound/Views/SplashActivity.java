@@ -31,6 +31,7 @@ public class SplashActivity extends Activity implements OnDownloadCompletedListe
     @Override
     public void onDownloadSuccess() {
         startActivity(new Intent(SplashActivity.this, MainActivity.class));
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 
     @Override

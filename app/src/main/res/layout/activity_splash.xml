@@ -8,81 +8,9 @@
     android:orientation="vertical"
     tools:context=".SplashActivity">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <ImageView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="15dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="R"
-            android:textSize="20dp"
-            android:textStyle="bold"
-            android:textColor="#ffffff"
-            android:gravity="center" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="E"
-            android:textSize="20dp"
-            android:textStyle="bold"
-            android:textColor="#ffffff"
-            android:gravity="center" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="S"
-            android:textSize="20dp"
-            android:textStyle="bold"
-            android:textColor="#ffffff"
-            android:gravity="center" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="O"
-            android:textSize="20dp"
-            android:textStyle="bold"
-            android:textColor="#ffffff"
-            android:gravity="center" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="U"
-            android:textSize="20dp"
-            android:textStyle="bold"
-            android:textColor="#ffffff"
-            android:gravity="center" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="N"
-            android:textSize="20dp"
-            android:textStyle="bold"
-            android:textColor="#ffffff"
-            android:gravity="center" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="D"
-            android:textSize="20dp"
-            android:textStyle="bold"
-            android:textColor="#ffffff"
-            android:gravity="center" />
-
-    </LinearLayout>
+        android:src="@drawable/medley_splash" />
 
 </LinearLayout>

@@ -190,7 +190,7 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
         // Initialize article offset.
         final ViewTreeObserver titleObserver = mArticleTitleLayout.getViewTreeObserver();
         final int windowHeight = ViewCalculator.getWindowHeight(getActivity());
-        final int offsetPadding = (int) ViewCalculator.dpToPX(getActivity(), 26);
+        final int offsetPadding = (int) ViewCalculator.dpToPX(getActivity(), 48);
         final int layoutPadding = (int) ViewCalculator.dpToPX(getActivity(), 5);
         titleObserver.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
             @Override
