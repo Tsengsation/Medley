@@ -42,7 +42,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:orientation="vertical"
-                    android:paddingBottom="10dp">
+                    android:paddingBottom="15dp">
 
                     <TextView
                         android:id="@+id/article_title"

@@ -119,21 +119,11 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
                 }
             }.start();
         } else if (v.equals(mLikesButton)) {
-            Article updatedArticle;
             if (mArticle.prevLiked) {
-                // Unlike article.
-                updatedArticle = new Article(mArticle.id, mArticle.type, mArticle.imageUrl,
-                        mArticle.date, mArticle.text, mArticle.title, mArticle.sourceName,
-                        mArticle.sourceUrl, mArticle.numLikes - 1, mArticle.url, mArticle.author,
-                        !mArticle.prevLiked);
+                mParseResound.unlikeArticle(mArticle, this);
             } else {
-                // Like article.
-                updatedArticle = new Article(mArticle.id, mArticle.type, mArticle.imageUrl,
-                        mArticle.date, mArticle.text, mArticle.title, mArticle.sourceName,
-                        mArticle.sourceUrl, mArticle.numLikes + 1, mArticle.url, mArticle.author,
-                        !mArticle.prevLiked);
+                mParseResound.likeArticle(mArticle, this);
             }
-            mParseResound.updateArticle(mArticle, updatedArticle, this);
         } else if (v.equals(mShareButton)) {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.setType("text/plain");
@@ -224,7 +214,7 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_article, null);
-        if (savedInstanceState != null) {
+        if (savedInstanceState != null && savedInstanceState.getParcelable(KEY_ARTICLE) != null) {
             mArticle = savedInstanceState.getParcelable(KEY_ARTICLE);
         }
         mParseResound = ParseResound.getInstance();

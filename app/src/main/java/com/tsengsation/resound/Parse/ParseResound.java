@@ -4,6 +4,7 @@ import android.app.Application;
 import android.util.Log;
 
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.Parse;
 import com.parse.ParseACL;
 import com.parse.ParseCrashReporting;
@@ -14,6 +15,7 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,7 @@ public class ParseResound extends Application {
 
     private static final String ARTICLE_TABLE_KEY = "Article";
     private static final String AUTHOR_TABLE_KEY = "Author";
+    private static final String DEVICES_TABLE_KEY = "AndroidDevices";
 
     private static final String ARTICLE_DATE_KEY = "articleDate";
     private static final String ARTICLE_IMAGE_KEY = "articleImage";
@@ -40,9 +43,13 @@ public class ParseResound extends Application {
     private static final String AUTHOR_IMAGE_KEY = "image";
     private static final String AUTHOR_NAME_KEY = "name";
 
+    private static final String DEVICES_UID_KEY = "deviceUid";
+    private static final String DEVICES_ARTICLES_KEY = "likedArticles";
+
     private static ParseResound mInstance = null;
     private OnDownloadCompletedListener mDownloadCompletedListener;
     private Map<String, Author> mAuthorsMap;
+    private ParseObject mParseDevice;
     private ArticleLibrary mArticleLibrary;
     private ParseQuery mCurrentQuery;
 
@@ -90,12 +97,34 @@ public class ParseResound extends Application {
                     parseArticleMap.put(articleObj.getObjectId(), articleObj);
                 }
                 mArticleLibrary = new ArticleLibrary(parseArticleMap, foundArticles);
+                pullLikedArticles();
+            } else {
+                Log.d("Articles", "Error: " + e.getMessage());
+                if (mDownloadCompletedListener != null) {
+                    mDownloadCompletedListener.onDownloadFail();
+                }
+            }
+        }
+    };
+
+    private final GetCallback<ParseObject> GET_LIKED_ARTICLES_CALLBACK = new GetCallback<ParseObject>() {
+        @Override
+        public void done(ParseObject parseObject, ParseException e) {
+            if (e == null || e.getMessage().contains("no results found for query")) {
+                if (parseObject == null) {
+                    Log.d("Devices", "No history of liked articles found for this device.");
+                    mParseDevice = new ParseObject(DEVICES_TABLE_KEY);
+                    mParseDevice.put(DEVICES_UID_KEY, Installation.id(ParseResound.this));
+                } else {
+                    Log.d("Devices", "Found history of liked articles.");
+                    mParseDevice = parseObject;
+                }
                 mCurrentQuery = null;
                 if (mDownloadCompletedListener != null) {
                     mDownloadCompletedListener.onDownloadSuccess();
                 }
             } else {
-                Log.d("Articles", "Error: " + e.getMessage());
+                Log.d("Liked articles", "Error: " + e.getMessage());
                 if (mDownloadCompletedListener != null) {
                     mDownloadCompletedListener.onDownloadFail();
                 }
@@ -113,7 +142,7 @@ public class ParseResound extends Application {
 
     public void downloadData() {
         pullAllAuthors();
-        //calls pullAllArticles, in turn calls listener
+        // Calls pullAllArticles, in turn calls pullLikedArticles, in turn calls listener.
     }
 
     public void setOnDownloadCompleted(OnDownloadCompletedListener listener) {
@@ -127,18 +156,35 @@ public class ParseResound extends Application {
         return mInstance;
     }
 
-    public void updateArticle(Article article, final Article updatedArticle,
+    public void likeArticle(Article article, OnUpdateCompletedListener<Article> updateListener) {
+        Article updatedArticle = new Article(article.id, article.type, article.imageUrl,
+                article.date, article.text, article.title, article.sourceName,
+                article.sourceUrl, article.numLikes + 1, article.url, article.author,
+                !article.prevLiked);
+        mParseDevice.addUnique(DEVICES_ARTICLES_KEY, article.id);
+        updateArticle(article, updatedArticle, updateListener);
+    }
+
+    public void unlikeArticle(Article article, OnUpdateCompletedListener<Article> updateListener) {
+        Article updatedArticle = new Article(article.id, article.type, article.imageUrl,
+                article.date, article.text, article.title, article.sourceName,
+                article.sourceUrl, article.numLikes - 1, article.url, article.author,
+                !article.prevLiked);
+        mParseDevice.removeAll(DEVICES_ARTICLES_KEY, Arrays.asList(article.id));
+        updateArticle(article, updatedArticle, updateListener);
+    }
+
+    private void updateArticle(Article article, final Article updatedArticle,
                               final OnUpdateCompletedListener<Article> updateListener) {
         ParseObject parseArticle = mArticleLibrary.getParseArticleObject(article.id);
         if (article.numLikes != updatedArticle.numLikes) {
             parseArticle.put(ARTICLE_LIKES_KEY, updatedArticle.numLikes);
-            // TODO: Update MAC address mapping (device list of likes)?
             parseArticle.saveInBackground(new SaveCallback() {
                 @Override
                 public void done(ParseException e) {
                     if (e == null) {
                         mArticleLibrary.updateArticle(updatedArticle);
-                        updateListener.onUpdateSuccess(updatedArticle);
+                        updateLikedArticles(updatedArticle, updateListener);
                     } else {
                         updateListener.onUpdateFail(e);
                     }
@@ -147,7 +193,29 @@ public class ParseResound extends Application {
         }
     }
 
+    public void updateLikedArticles(final Article updatedArticle,
+                                    final OnUpdateCompletedListener updateListener) {
+        mParseDevice.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e == null) {
+                    updateListener.onUpdateSuccess(updatedArticle);
+                } else {
+                    updateListener.onUpdateFail(e);
+                }
+            }
+        });
+    }
+
     public Article getArticle(int position) throws ArticleIndexOutOfBoundsException {
+        Article article = mArticleLibrary.getArticle(position);
+        if (mParseDevice.get(DEVICES_ARTICLES_KEY) != null
+                && mParseDevice.getList(DEVICES_ARTICLES_KEY).contains(article.id)) {
+            Article updatedArticle = new Article(article.id, article.type, article.imageUrl,
+                    article.date, article.text, article.title, article.sourceName,
+                    article.sourceUrl, article.numLikes, article.url, article.author, true);
+            mArticleLibrary.updateArticle(updatedArticle);
+        }
         return mArticleLibrary.getArticle(position);
     }
 
@@ -157,6 +225,15 @@ public class ParseResound extends Application {
 
     public void filterArticles(int type) {
         mArticleLibrary.filterByType(type);
+    }
+
+    private void pullLikedArticles() {
+        String deviceUid = Installation.id(this);
+        ParseQuery<ParseObject> query = ParseQuery.getQuery(DEVICES_TABLE_KEY);
+        mCurrentQuery = query;
+        query.whereEqualTo(DEVICES_UID_KEY, deviceUid);
+
+        query.getFirstInBackground(GET_LIKED_ARTICLES_CALLBACK);
     }
 
     private void pullAllAuthors() {
@@ -197,9 +274,10 @@ public class ParseResound extends Application {
                 "uKREO45z7PlpPp72MUp3XUKvHPt8K3MQuwD2VyU8");
 
         ParseUser.enableAutomaticUser();
+        ParseUser.getCurrentUser().saveInBackground();
         ParseACL defaultACL = new ParseACL();
         defaultACL.setPublicReadAccess(true);
-        defaultACL.setPublicWriteAccess(false);
+        defaultACL.setPublicWriteAccess(true);
         ParseACL.setDefaultACL(defaultACL, true);
     }
 
