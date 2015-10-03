@@ -2,11 +2,21 @@
 <resources>
 
     <string name="app_name">medley</string>
-    <string name="action_settings">Settings</string>
+
+    <string name="sponsorship_message">This project was made possible through the generosity of the John Spencer Bassett Fund.</string>
+
     <string name="featured">F E A T U R E D</string>
     <string name="news">N E W S</string>
     <string name="albums">A L B U M S</string>
     <string name="concerts">C O N C E R T S</string>
     <string name="playlists">P L A Y L I S T S</string>
+
+    <string-array name="article_types">
+        <item>@string/featured</item>
+        <item>@string/news</item>
+        <item>@string/albums</item>
+        <item>@string/concerts</item>
+        <item>@string/playlists</item>
+    </string-array>
 
 </resources>

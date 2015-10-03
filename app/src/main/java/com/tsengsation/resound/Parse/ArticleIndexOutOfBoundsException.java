@@ -3,7 +3,7 @@ package com.tsengsation.resound.Parse;
 /**
  * Exception thrown when article index requested is out of bounds of the article list.
  */
-public class ArticleIndexOutOfBoundsException extends Exception {
+public class ArticleIndexOutOfBoundsException extends RuntimeException {
 
     public ArticleIndexOutOfBoundsException(int index, int size) {
         super(String.format(
