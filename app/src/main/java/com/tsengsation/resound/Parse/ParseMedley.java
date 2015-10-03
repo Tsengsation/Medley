@@ -13,6 +13,7 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
+import com.tsengsation.resound.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +24,7 @@ import java.util.Map;
 /**
  * Singleton class that represents Application and mediator for all parse calls.
  */
-public class ParseResound extends Application {
+public class ParseMedley extends Application {
 
     private static final String ARTICLE_TABLE_KEY = "Article";
     private static final String AUTHOR_TABLE_KEY = "Author";
@@ -46,7 +47,7 @@ public class ParseResound extends Application {
     private static final String DEVICES_UID_KEY = "deviceUid";
     private static final String DEVICES_ARTICLES_KEY = "likedArticles";
 
-    private static ParseResound mInstance = null;
+    private static ParseMedley mInstance = null;
     private OnDownloadCompletedListener mDownloadCompletedListener;
     private Map<String, Author> mAuthorsMap;
     private ParseObject mParseDevice;
@@ -114,7 +115,7 @@ public class ParseResound extends Application {
                 if (parseObject == null) {
                     Log.d("Devices", "No history of liked articles found for this device.");
                     mParseDevice = new ParseObject(DEVICES_TABLE_KEY);
-                    mParseDevice.put(DEVICES_UID_KEY, Installation.id(ParseResound.this));
+                    mParseDevice.put(DEVICES_UID_KEY, Installation.id(ParseMedley.this));
                 } else {
                     Log.d("Devices", "Found history of liked articles.");
                     mParseDevice = parseObject;
@@ -136,7 +137,7 @@ public class ParseResound extends Application {
      * DO NOT EVER CALL THIS:
      * Public in order for android to compile and run
      */
-    public ParseResound() {
+    public ParseMedley() {
         mInstance = this;
     }
 
@@ -149,11 +150,16 @@ public class ParseResound extends Application {
         mDownloadCompletedListener = listener;
     }
 
-    public synchronized static ParseResound getInstance() {
+    public synchronized static ParseMedley getInstance() {
         if (mInstance == null) {
-            mInstance = new ParseResound();
+            mInstance = new ParseMedley();
         }
         return mInstance;
+    }
+
+    public String getShareUrl(Article article) {
+        return String.format("%s://%s/#%s", getString(R.string.webscheme),
+                getString(R.string.webhost), article.id);
     }
 
     public void likeArticle(Article article, OnUpdateCompletedListener<Article> updateListener) {
@@ -217,6 +223,10 @@ public class ParseResound extends Application {
             mArticleLibrary.updateArticle(updatedArticle);
         }
         return mArticleLibrary.getArticle(position);
+    }
+
+    public Article getArticleById(String id) {
+        return mArticleLibrary.findArticleById(id);
     }
 
     public int getNumArticles() {

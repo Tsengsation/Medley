@@ -6,8 +6,8 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import com.parse.ParseAnalytics;
-import com.tsengsation.resound.Parse.ParseResound;
-import com.tsengsation.resound.Parse.ParseResound.OnDownloadCompletedListener;
+import com.tsengsation.resound.Parse.ParseMedley;
+import com.tsengsation.resound.Parse.ParseMedley.OnDownloadCompletedListener;
 import com.tsengsation.resound.R;
 
 /**
@@ -15,7 +15,7 @@ import com.tsengsation.resound.R;
  */
 public class SplashActivity extends Activity implements OnDownloadCompletedListener {
 
-    private ParseResound mParseResound;
+    private ParseMedley mParseResound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +23,7 @@ public class SplashActivity extends Activity implements OnDownloadCompletedListe
         setContentView(R.layout.activity_splash);
 
         ParseAnalytics.trackAppOpenedInBackground(getIntent());
-        mParseResound = ParseResound.getInstance();
+        mParseResound = ParseMedley.getInstance();
         mParseResound.setOnDownloadCompleted(this);
         mParseResound.downloadData();
     }

@@ -11,6 +11,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!-- Overlaid view for article links -->
+    <FrameLayout
+        android:id="@+id/overlay_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <!-- The navigation drawer -->
     <LinearLayout
         android:id="@+id/drawer_frame"

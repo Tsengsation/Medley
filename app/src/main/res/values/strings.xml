@@ -11,6 +11,9 @@
     <string name="concerts">C O N C E R T S</string>
     <string name="playlists">P L A Y L I S T S</string>
 
+    <string name="webhost">contentmedleyduke.weebly.com</string>
+    <string name="webscheme">http</string>
+
     <string-array name="article_types">
         <item>@string/featured</item>
         <item>@string/news</item>

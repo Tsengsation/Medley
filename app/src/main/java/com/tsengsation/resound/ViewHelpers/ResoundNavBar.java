@@ -33,6 +33,10 @@ public class ResoundNavBar extends LinearLayout implements View.OnClickListener 
         mTextView.setText(text.toUpperCase());
     }
 
+    public void setButtonDrawable(int drawable) {
+        mButton.setImageDrawable(getResources().getDrawable(drawable));
+    }
+
     @Override
     public void onClick(View v) {
         if (v.equals(mButton)) {

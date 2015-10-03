@@ -24,8 +24,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tsengsation.resound.Parse.Article;
-import com.tsengsation.resound.Parse.ParseResound;
-import com.tsengsation.resound.Parse.ParseResound.OnUpdateCompletedListener;
+import com.tsengsation.resound.Parse.ParseMedley;
+import com.tsengsation.resound.Parse.ParseMedley.OnUpdateCompletedListener;
 import com.tsengsation.resound.PicassoHelper.CircleTransformation;
 import com.tsengsation.resound.R;
 import com.tsengsation.resound.ViewHelpers.ImageUrlViewPair;
@@ -55,7 +55,7 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
     private final static int SCROLL_ITERS = 100;
     private final static int SCROLL_WAIT = SCROLL_MS / SCROLL_ITERS;
 
-    private ParseResound mParseResound;
+    private ParseMedley mParseMedley;
 
     private ImageView mAuthorImageView;
     private TextView mAuthorName;
@@ -120,15 +120,16 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
             }.start();
         } else if (v.equals(mLikesButton)) {
             if (mArticle.prevLiked) {
-                mParseResound.unlikeArticle(mArticle, this);
+                mParseMedley.unlikeArticle(mArticle, this);
             } else {
-                mParseResound.likeArticle(mArticle, this);
+                mParseMedley.likeArticle(mArticle, this);
             }
         } else if (v.equals(mShareButton)) {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.setType("text/plain");
             shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Resound");
-            String shareMsg = String.format("Check out this article at %s", mArticle.url);
+            String shareMsg = String.format("Check out this article at %s",
+                    mParseMedley.getShareUrl(mArticle));
             shareIntent.putExtra(Intent.EXTRA_TEXT, shareMsg);
             startActivity(Intent.createChooser(shareIntent, "Share via"));
         }
@@ -217,7 +218,7 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
         if (savedInstanceState != null && savedInstanceState.getParcelable(KEY_ARTICLE) != null) {
             mArticle = savedInstanceState.getParcelable(KEY_ARTICLE);
         }
-        mParseResound = ParseResound.getInstance();
+        mParseMedley = ParseMedley.getInstance();
         initViewReferences(view);
         setUpView();
         return view;
@@ -256,6 +257,10 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
                 ? getResources().getDrawable(R.drawable.ic_favorite_fill)
                 : getResources().getDrawable(R.drawable.ic_favorite_border);
         mLikesButton.setImageDrawable(likeDrawable);
-        mLikesText.setText(Long.toString(mArticle.numLikes));
+        if (mArticle.numLikes > 0) {
+            mLikesText.setText(Long.toString(mArticle.numLikes));
+        } else {
+            mLikesText.setText("");
+        }
     }
 }

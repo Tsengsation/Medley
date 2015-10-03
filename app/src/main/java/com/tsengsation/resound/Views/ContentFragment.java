@@ -24,8 +24,7 @@ import android.widget.ViewSwitcher.ViewFactory;
 
 import com.squareup.picasso.Picasso;
 import com.tsengsation.resound.Parse.Article;
-import com.tsengsation.resound.Parse.ArticleIndexOutOfBoundsException;
-import com.tsengsation.resound.Parse.ParseResound;
+import com.tsengsation.resound.Parse.ParseMedley;
 import com.tsengsation.resound.PicassoHelper.PicassoImageSwitcher;
 import com.tsengsation.resound.R;
 import com.tsengsation.resound.ViewHelpers.ObservableScrollView.OnFlingListener;
@@ -36,7 +35,7 @@ import com.tsengsation.resound.ViewHelpers.ViewCalculator;
 
 
 public class ContentFragment extends Fragment implements ViewFactory, OnPageChangeListener,
-        DrawerListener, NavButtonClickListener {
+        DrawerListener, NavButtonClickListener, OnScrolledListener, OnFlingListener{
 
     private final static float MAX_ALPHA = 0.6f;
     private final static int MAX_ALPHA_OFFSET_DP = 80;
@@ -49,19 +48,31 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
     private View mFadeView;
     private RelativeLayout mForegroundLayout;
     private ResoundNavBar mNavbar;
+    private MainActivity mActivity;
 
-    private ParseResound mParseResound;
+    private ParseMedley mParseMedley;
     private int mCurrPosition;
     private float mCurrFadeY;
     private String mArticleType;
     private int mArticleTypeCode;
-    private DrawerLayout mDrawer;
+    private boolean mIsOverlay;
+    private Article mOverlayArticle;
 
-    public static ContentFragment newInstance(String articleType, int type, DrawerLayout drawer) {
+    public static ContentFragment newOverlayInstance(Article article, MainActivity mainActivity) {
+        ContentFragment fragment = new ContentFragment();
+        fragment.mIsOverlay = true;
+        fragment.mOverlayArticle = article;
+        fragment.mActivity = mainActivity;
+        return fragment;
+    }
+
+    public static ContentFragment newInstance(String articleType, int type,
+                                              MainActivity mainActivity) {
         ContentFragment fragment = new ContentFragment();
         fragment.mArticleType = articleType;
         fragment.mArticleTypeCode = type;
-        fragment.mDrawer = drawer;
+        fragment.mActivity = mainActivity;
+        fragment.mIsOverlay = false;
         return fragment;
     }
 
@@ -69,7 +80,7 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
         mArticleType = articleType;
         mArticleTypeCode = type;
         mNavbar.setText(mArticleType);
-        mParseResound.filterArticles(mArticleTypeCode);
+        mParseMedley.filterArticles(mArticleTypeCode);
         mArticlePagerAdapter.notifyDataSetChanged();
         mArticlePager.setCurrentItem(0);
         if (mCurrPosition == 0) {
@@ -81,12 +92,14 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_content, container, false);
-        mParseResound = ParseResound.getInstance();
+        mParseMedley = ParseMedley.getInstance();
         initViewReferences(view);
         setUpSwipes();
         setUpImageSwitching();
         initImages();
-        updateArticles(mArticleType, mArticleTypeCode);
+        if (mArticleType != null) {
+            updateArticles(mArticleType, mArticleTypeCode);
+        }
         return view;
     }
 
@@ -108,9 +121,12 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
     }
 
     private void setUpSwipes() {
-        mArticlePagerAdapter = new ArticlePagerAdapter(getActivity().getSupportFragmentManager());
+        mArticlePagerAdapter = mIsOverlay
+                ? new OverlayArticlePagerAdapter(this, getChildFragmentManager(),
+                mOverlayArticle)
+                : new ArticlePagerAdapter(this, getChildFragmentManager());
         mArticlePager.setAdapter(mArticlePagerAdapter);
-        mArticlePager.setOffscreenPageLimit(0);
+        mArticlePager.setOffscreenPageLimit(1);
         mArticlePager.setOnPageChangeListener(this);
     }
 
@@ -164,13 +180,18 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
 
     @Override
     public void onButtonClick() {
-        mDrawer.openDrawer(Gravity.LEFT);
+        DrawerLayout drawer = mActivity.getDrawerLayout();
+        if (!mIsOverlay && drawer != null) {
+            drawer.openDrawer(Gravity.LEFT);
+        } else if (mIsOverlay) {
+            mActivity.closeOverlay();
+        }
     }
 
     private void initImages() {
         Article currArticle = ((ArticleFragment) mArticlePagerAdapter.getItem(0)).getArticle();
-        Article nextArticle = mParseResound.getNumArticles() > 1
-                ? mParseResound.getArticle(1) : currArticle;
+        Article nextArticle = mParseMedley.getNumArticles() > 1
+                ? mParseMedley.getArticle(1) : currArticle;
         Article prevArticle = currArticle;
         mArticleImageSwitcherCurr.getImageSwitcher().setAlpha(1f);
         mArticleImageSwitcherPrev.getImageSwitcher().setAlpha(0f);
@@ -181,11 +202,11 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
     }
 
     private void updateImages(int position) {
-        Article currArticle = mParseResound.getArticle(position);
+        Article currArticle = mParseMedley.getArticle(position);
                 ((ArticleFragment) mArticlePagerAdapter.getItem(position)).getArticle();
-        Article prevArticle = position > 0 ? mParseResound.getArticle(position - 1) : currArticle;
-        Article nextArticle = position < mParseResound.getNumArticles() - 1
-                ? mParseResound.getArticle(position + 1) : currArticle;
+        Article prevArticle = position > 0 ? mParseMedley.getArticle(position - 1) : currArticle;
+        Article nextArticle = position < mParseMedley.getNumArticles() - 1
+                ? mParseMedley.getArticle(position + 1) : currArticle;
         if (position > mCurrPosition) { // moving right to next article
             PicassoImageSwitcher temp = mArticleImageSwitcherPrev;
             mArticleImageSwitcherPrev = mArticleImageSwitcherCurr;
@@ -225,6 +246,9 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
         mFadeView = view.findViewById(R.id.fade_view);
         mForegroundLayout = (RelativeLayout) view.findViewById(R.id.foreground_content_layout);
         mNavbar = (ResoundNavBar) view.findViewById(R.id.navbar);
+        if (mIsOverlay) {
+            mNavbar.setButtonDrawable(R.drawable.xbutton);
+        }
         mNavbar.setOnButtonClick(this);
     }
 
@@ -250,11 +274,59 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
         mCurrFadeY = alpha;
     }
 
-    public class ArticlePagerAdapter extends FragmentStatePagerAdapter implements
-            OnScrolledListener, OnFlingListener {
+    @Override
+    public void onScrolled(int oldY, int newY) {
+        updateFadeY(newY);
+    }
 
-        public ArticlePagerAdapter(FragmentManager manager) {
+    @Override
+    public void onFlung(int velocityY) {
+        if (velocityY < 0) {
+            new CountDownTimer(100, 5) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    float maxOffset = (float) ViewCalculator.dpToPX(
+                            getActivity().getApplicationContext(), MAX_ALPHA_OFFSET_DP);
+                    updateFadeY((int) (maxOffset * (millisUntilFinished / 350f)));
+                }
+
+                @Override
+                public void onFinish() {
+                    updateFadeY(0);
+                }
+            }.start();
+        }
+    }
+
+    public class OverlayArticlePagerAdapter extends ArticlePagerAdapter {
+
+        private Article mArticle;
+
+        public OverlayArticlePagerAdapter(ContentFragment parent, FragmentManager manager,
+                                          Article article) {
+            super(parent, manager);
+            mArticle = article;
+        }
+
+        @Override
+        public int getCount() {
+            return 1;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            Log.d("wtfuck", "1 " + mArticle.title);
+            return getItem(mArticle);
+        }
+    }
+
+    public class ArticlePagerAdapter extends FragmentStatePagerAdapter {
+
+        private ContentFragment mParent;
+
+        public ArticlePagerAdapter(ContentFragment parent, FragmentManager manager) {
             super(manager);
+            mParent = parent;
         }
 
         @Override
@@ -264,48 +336,23 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
 
         @Override
         public int getCount() {
-            return ParseResound.getInstance().getNumArticles();
+            return ParseMedley.getInstance().getNumArticles();
         }
 
         @Override
         public Fragment getItem(int position) {
-            Fragment fragment = null;
-            try {
-                fragment = ArticleFragment.newInstance(
-                        ParseResound.getInstance().getArticle(position));
-                final ArticleFragment articleFragment = (ArticleFragment) fragment;
-                articleFragment.setOnScrolled(this);
-                articleFragment.setOnFlung(this);
-            } catch (ArticleIndexOutOfBoundsException e) {
-                Log.e("Article Swipe", e.getMessage());
-            } finally {
-                return fragment;
-            }
+            Article article = ParseMedley.getInstance().getArticle(position);
+            Log.d("wtfuck", "2 " + ParseMedley.getInstance().getArticle(position).title);
+            return getItem(article);
         }
 
-        @Override
-        public void onScrolled(int oldY, int newY) {
-            updateFadeY(newY);
+        protected Fragment getItem(Article article) {
+            ArticleFragment fragment = ArticleFragment.newInstance(article);
+            fragment.setOnScrolled(mParent);
+            fragment.setOnFlung(mParent);
+            return fragment;
         }
 
-        @Override
-        public void onFlung(int velocityY) {
-            if (velocityY < 0) {
-                new CountDownTimer(100, 5) {
-                    @Override
-                    public void onTick(long millisUntilFinished) {
-                        float maxOffset = (float) ViewCalculator.dpToPX(
-                                getActivity().getApplicationContext(), MAX_ALPHA_OFFSET_DP);
-                        updateFadeY((int) (maxOffset * (millisUntilFinished / 350f)));
-                    }
-
-                    @Override
-                    public void onFinish() {
-                        updateFadeY(0);
-                    }
-                }.start();
-            }
-        }
     }
 
 }

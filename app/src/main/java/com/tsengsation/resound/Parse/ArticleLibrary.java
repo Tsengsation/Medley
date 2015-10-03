@@ -48,6 +48,15 @@ public class ArticleLibrary {
         return mFilteredArticles.get(position);
     }
 
+    public Article findArticleById(String id) {
+        for (Article article : mArticles) {
+            if (article.id.equals(id)) {
+                return article;
+            }
+        }
+        return null;
+    }
+
     public ParseObject getParseArticleObject(String id) {
         return mParseArticleMap.containsKey(id) ? mParseArticleMap.get(id) : null;
     }
