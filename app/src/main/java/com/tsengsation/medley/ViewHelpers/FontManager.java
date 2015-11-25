@@ -1,4 +1,4 @@
-package com.tsengsation.resound.ViewHelpers;
+package com.tsengsation.medley.ViewHelpers;
 
 import android.content.Context;
 import android.graphics.Typeface;

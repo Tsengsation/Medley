@@ -1,4 +1,4 @@
-package com.tsengsation.resound.Parse;
+package com.tsengsation.medley.Parse;
 
 import android.app.Application;
 import android.util.Log;
@@ -13,7 +13,7 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
-import com.tsengsation.resound.R;
+import com.tsengsation.medley.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;

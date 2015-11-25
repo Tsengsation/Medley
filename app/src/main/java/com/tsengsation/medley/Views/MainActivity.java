@@ -1,4 +1,4 @@
-package com.tsengsation.resound.Views;
+package com.tsengsation.medley.Views;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,10 +12,10 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.tsengsation.resound.Parse.Article;
-import com.tsengsation.resound.Parse.ParseMedley;
-import com.tsengsation.resound.R;
-import com.tsengsation.resound.ViewHelpers.FontManager;
+import com.tsengsation.medley.Parse.Article;
+import com.tsengsation.medley.Parse.ParseMedley;
+import com.tsengsation.medley.R;
+import com.tsengsation.medley.ViewHelpers.FontManager;
 
 public class MainActivity extends FragmentActivity {
 

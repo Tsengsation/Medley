@@ -45,7 +45,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <com.tsengsation.resound.ViewHelpers.ResoundNavBar
+            <com.tsengsation.medley.ViewHelpers.ResoundNavBar
                 android:id="@+id/navbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />

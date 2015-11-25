@@ -7,7 +7,7 @@
     android:orientation="vertical">
 
 
-    <com.tsengsation.resound.ViewHelpers.ObservableScrollView
+    <com.tsengsation.medley.ViewHelpers.ObservableScrollView
         android:id="@+id/article_scroll"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
@@ -129,6 +129,6 @@
 
         </LinearLayout>
 
-    </com.tsengsation.resound.ViewHelpers.ObservableScrollView>
+    </com.tsengsation.medley.ViewHelpers.ObservableScrollView>
 
 </LinearLayout>

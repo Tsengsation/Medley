@@ -1,4 +1,4 @@
-package com.tsengsation.resound.Views;
+package com.tsengsation.medley.Views;
 
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -22,17 +22,17 @@ import android.widget.RelativeLayout;
 import android.widget.ViewSwitcher.ViewFactory;
 
 import com.squareup.picasso.Picasso;
-import com.tsengsation.resound.Parse.Article;
-import com.tsengsation.resound.Parse.ParseMedley;
-import com.tsengsation.resound.PicassoHelper.PicassoImageSwitcher;
-import com.tsengsation.resound.R;
-import com.tsengsation.resound.ViewHelpers.FontManager;
-import com.tsengsation.resound.ViewHelpers.ObservableScrollView;
-import com.tsengsation.resound.ViewHelpers.ObservableScrollView.OnFlingListener;
-import com.tsengsation.resound.ViewHelpers.ObservableScrollView.OnScrolledListener;
-import com.tsengsation.resound.ViewHelpers.ResoundNavBar;
-import com.tsengsation.resound.ViewHelpers.ResoundNavBar.NavButtonClickListener;
-import com.tsengsation.resound.ViewHelpers.ViewCalculator;
+import com.tsengsation.medley.Parse.Article;
+import com.tsengsation.medley.Parse.ParseMedley;
+import com.tsengsation.medley.PicassoHelper.PicassoImageSwitcher;
+import com.tsengsation.medley.R;
+import com.tsengsation.medley.ViewHelpers.FontManager;
+import com.tsengsation.medley.ViewHelpers.ObservableScrollView;
+import com.tsengsation.medley.ViewHelpers.ObservableScrollView.OnFlingListener;
+import com.tsengsation.medley.ViewHelpers.ObservableScrollView.OnScrolledListener;
+import com.tsengsation.medley.ViewHelpers.ResoundNavBar;
+import com.tsengsation.medley.ViewHelpers.ResoundNavBar.NavButtonClickListener;
+import com.tsengsation.medley.ViewHelpers.ViewCalculator;
 
 
 public class ContentFragment extends Fragment implements ViewFactory, OnPageChangeListener,

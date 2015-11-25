@@ -1,4 +1,4 @@
-package com.tsengsation.resound.PicassoHelper;
+package com.tsengsation.medley.PicassoHelper;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;

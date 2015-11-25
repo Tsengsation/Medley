@@ -1,4 +1,4 @@
-package com.tsengsation.resound.Parse;
+package com.tsengsation.medley.Parse;
 
 import android.content.Context;
 

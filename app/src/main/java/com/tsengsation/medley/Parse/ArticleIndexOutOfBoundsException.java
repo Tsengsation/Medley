@@ -1,4 +1,4 @@
-package com.tsengsation.resound.Parse;
+package com.tsengsation.medley.Parse;
 
 /**
  * Exception thrown when article index requested is out of bounds of the article list.

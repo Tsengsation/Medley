@@ -1,4 +1,4 @@
-package com.tsengsation.resound.Views;
+package com.tsengsation.medley.Views;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -23,19 +23,19 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.tsengsation.resound.Parse.Article;
-import com.tsengsation.resound.Parse.ParseMedley;
-import com.tsengsation.resound.Parse.ParseMedley.OnUpdateCompletedListener;
-import com.tsengsation.resound.PicassoHelper.CircleTransformation;
-import com.tsengsation.resound.R;
-import com.tsengsation.resound.ViewHelpers.FontManager;
-import com.tsengsation.resound.ViewHelpers.ImageUrlViewPair;
-import com.tsengsation.resound.ViewHelpers.MultiImageLoader;
-import com.tsengsation.resound.ViewHelpers.MultiImageLoader.OnImageLoadedListener;
-import com.tsengsation.resound.ViewHelpers.ObservableScrollView;
-import com.tsengsation.resound.ViewHelpers.ObservableScrollView.OnFlingListener;
-import com.tsengsation.resound.ViewHelpers.ObservableScrollView.OnScrolledListener;
-import com.tsengsation.resound.ViewHelpers.ViewCalculator;
+import com.tsengsation.medley.Parse.Article;
+import com.tsengsation.medley.Parse.ParseMedley;
+import com.tsengsation.medley.Parse.ParseMedley.OnUpdateCompletedListener;
+import com.tsengsation.medley.PicassoHelper.CircleTransformation;
+import com.tsengsation.medley.R;
+import com.tsengsation.medley.ViewHelpers.FontManager;
+import com.tsengsation.medley.ViewHelpers.ImageUrlViewPair;
+import com.tsengsation.medley.ViewHelpers.MultiImageLoader;
+import com.tsengsation.medley.ViewHelpers.MultiImageLoader.OnImageLoadedListener;
+import com.tsengsation.medley.ViewHelpers.ObservableScrollView;
+import com.tsengsation.medley.ViewHelpers.ObservableScrollView.OnFlingListener;
+import com.tsengsation.medley.ViewHelpers.ObservableScrollView.OnScrolledListener;
+import com.tsengsation.medley.ViewHelpers.ViewCalculator;
 
 /**
  * Fragment that hosts an article view.

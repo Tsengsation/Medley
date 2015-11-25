@@ -1,4 +1,4 @@
-package com.tsengsation.resound.Views;
+package com.tsengsation.medley.Views;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
@@ -8,8 +8,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.tsengsation.resound.R;
-import com.tsengsation.resound.ViewHelpers.FontManager;
+import com.tsengsation.medley.R;
+import com.tsengsation.medley.ViewHelpers.FontManager;
 
 public class NavItemAdapter extends ArrayAdapter<String> {
 

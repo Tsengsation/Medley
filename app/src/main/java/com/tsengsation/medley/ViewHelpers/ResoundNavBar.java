@@ -1,4 +1,4 @@
-package com.tsengsation.resound.ViewHelpers;
+package com.tsengsation.medley.ViewHelpers;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -8,7 +8,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.tsengsation.resound.R;
+import com.tsengsation.medley.R;
 
 /**
  * Navigation bar for Resound application.
