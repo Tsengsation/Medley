@@ -58,6 +58,7 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
     private int mArticleTypeCode;
     private boolean mIsOverlay;
     private Article mOverlayArticle;
+    private CountDownTimer mFlungTimer;
 
     public static ContentFragment newOverlayInstance(Article article, MainActivity mainActivity) {
         ContentFragment fragment = new ContentFragment();
@@ -283,19 +284,20 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
 
     @Override
     public void onFlung(final ObservableScrollView view, int velocityY) {
-        if (velocityY < 0) {
-            new CountDownTimer(250, 5) {
-                @Override
-                public void onTick(long millisUntilFinished) {
-                    updateFadeY(view.getScrollY());
-                }
-
-                @Override
-                public void onFinish() {
-                    updateFadeY(view.getScrollY());
-                }
-            }.start();
+        if (mFlungTimer != null) {
+            mFlungTimer.cancel();
         }
+        mFlungTimer = new CountDownTimer(1000, 50) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                updateFadeY(view.getScrollY());
+            }
+
+            @Override
+            public void onFinish() {
+                updateFadeY(view.getScrollY());
+            }
+        }.start();
     }
 
     public class OverlayArticlePagerAdapter extends ArticlePagerAdapter {
