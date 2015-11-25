@@ -1,6 +1,7 @@
 package com.tsengsation.resound.ViewHelpers;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.widget.ScrollView;
 
@@ -24,6 +25,12 @@ public class ObservableScrollView extends ScrollView {
         super(context, attrs);
     }
 
+    // Prevents scrolling due to focus changes.
+    @Override
+    protected boolean onRequestFocusInDescendants(int direction, Rect previouslyFocusedRect) {
+        return true;
+    }
+
     public void setOnScrolled(OnScrolledListener scrollViewListener) {
         this.mScrollViewListener = scrollViewListener;
     }
@@ -40,7 +47,7 @@ public class ObservableScrollView extends ScrollView {
     public void fling(int velocityY) {
         super.fling(velocityY);
         if (mFlingListener != null) {
-            mFlingListener.onFlung(velocityY);
+            mFlingListener.onFlung(this, velocityY);
         }
     }
 
@@ -48,7 +55,7 @@ public class ObservableScrollView extends ScrollView {
     protected void onScrollChanged(int x, int y, int oldx, int oldy) {
         super.onScrollChanged(x, y, oldx, oldy);
         if (mScrollViewListener != null) {
-            mScrollViewListener.onScrolled(y, oldy);
+            mScrollViewListener.onScrolled(this, y, oldy);
         }
     }
 
@@ -57,7 +64,7 @@ public class ObservableScrollView extends ScrollView {
      */
     public static interface OnScrolledListener {
 
-        void onScrolled(int oldY, int newY);
+        void onScrolled(ObservableScrollView view, int oldY, int newY);
     }
 
     /**
@@ -65,6 +72,6 @@ public class ObservableScrollView extends ScrollView {
      */
     public static interface OnFlingListener {
 
-        public void onFlung(int velocityY);
+        public void onFlung(ObservableScrollView view, int velocityY);
     }
 }

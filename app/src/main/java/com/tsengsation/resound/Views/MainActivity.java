@@ -10,14 +10,17 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.tsengsation.resound.Parse.Article;
 import com.tsengsation.resound.Parse.ParseMedley;
 import com.tsengsation.resound.R;
+import com.tsengsation.resound.ViewHelpers.FontManager;
 
 public class MainActivity extends FragmentActivity {
 
     private String[] mArticleTypes;
+    private TextView mDrawerTitle;
     private LinearLayout mDrawer;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
@@ -37,6 +40,8 @@ public class MainActivity extends FragmentActivity {
                 R.drawable.microphone,
                 R.drawable.playlist
         };
+        mDrawerTitle = (TextView) findViewById(R.id.navdrawer_title);
+        FontManager.setFont(this, mDrawerTitle, FontManager.GENERICA);
         mDrawer = (LinearLayout) findViewById(R.id.drawer_frame);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.navigation_list);

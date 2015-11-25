@@ -1,7 +1,12 @@
+@font-face {
+  font-family: ArticleFont;
+  src: url("file:///android_asset/fonts/ArticleFont.ttf")
+}
+
 div {
   background-color:transparent;
   color:white;
-  font-family:sans-serif;
+  font-family:ArticleFont;
   font-size:16;
   text-align:justify
 }

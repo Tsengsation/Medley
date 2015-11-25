@@ -11,7 +11,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +26,8 @@ import com.tsengsation.resound.Parse.Article;
 import com.tsengsation.resound.Parse.ParseMedley;
 import com.tsengsation.resound.PicassoHelper.PicassoImageSwitcher;
 import com.tsengsation.resound.R;
+import com.tsengsation.resound.ViewHelpers.FontManager;
+import com.tsengsation.resound.ViewHelpers.ObservableScrollView;
 import com.tsengsation.resound.ViewHelpers.ObservableScrollView.OnFlingListener;
 import com.tsengsation.resound.ViewHelpers.ObservableScrollView.OnScrolledListener;
 import com.tsengsation.resound.ViewHelpers.ResoundNavBar;
@@ -79,6 +80,7 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
     public void updateArticles(String articleType, int type) {
         mArticleType = articleType;
         mArticleTypeCode = type;
+        mNavbar.setFont(FontManager.PETITA_MEDIUM);
         mNavbar.setText(mArticleType);
         mParseMedley.filterArticles(mArticleTypeCode);
         mArticlePagerAdapter.notifyDataSetChanged();
@@ -275,24 +277,22 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
     }
 
     @Override
-    public void onScrolled(int oldY, int newY) {
+    public void onScrolled(ObservableScrollView view, int oldY, int newY) {
         updateFadeY(newY);
     }
 
     @Override
-    public void onFlung(int velocityY) {
+    public void onFlung(final ObservableScrollView view, int velocityY) {
         if (velocityY < 0) {
-            new CountDownTimer(100, 5) {
+            new CountDownTimer(250, 5) {
                 @Override
                 public void onTick(long millisUntilFinished) {
-                    float maxOffset = (float) ViewCalculator.dpToPX(
-                            getActivity().getApplicationContext(), MAX_ALPHA_OFFSET_DP);
-                    updateFadeY((int) (maxOffset * (millisUntilFinished / 350f)));
+                    updateFadeY(view.getScrollY());
                 }
 
                 @Override
                 public void onFinish() {
-                    updateFadeY(0);
+                    updateFadeY(view.getScrollY());
                 }
             }.start();
         }
@@ -315,7 +315,6 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
 
         @Override
         public Fragment getItem(int position) {
-            Log.d("wtfuck", "1 " + mArticle.title);
             return getItem(mArticle);
         }
     }
@@ -342,7 +341,6 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
         @Override
         public Fragment getItem(int position) {
             Article article = ParseMedley.getInstance().getArticle(position);
-            Log.d("wtfuck", "2 " + ParseMedley.getInstance().getArticle(position).title);
             return getItem(article);
         }
 

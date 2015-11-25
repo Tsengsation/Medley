@@ -29,6 +29,10 @@ public class ResoundNavBar extends LinearLayout implements View.OnClickListener 
         mButton.setOnClickListener(this);
     }
 
+    public void setFont(int font) {
+        FontManager.setFont(getContext(), mTextView, font);
+    }
+
     public void setText(String text) {
         mTextView.setText(text.toUpperCase());
     }

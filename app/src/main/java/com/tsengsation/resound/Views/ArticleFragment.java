@@ -28,6 +28,7 @@ import com.tsengsation.resound.Parse.ParseMedley;
 import com.tsengsation.resound.Parse.ParseMedley.OnUpdateCompletedListener;
 import com.tsengsation.resound.PicassoHelper.CircleTransformation;
 import com.tsengsation.resound.R;
+import com.tsengsation.resound.ViewHelpers.FontManager;
 import com.tsengsation.resound.ViewHelpers.ImageUrlViewPair;
 import com.tsengsation.resound.ViewHelpers.MultiImageLoader;
 import com.tsengsation.resound.ViewHelpers.MultiImageLoader.OnImageLoadedListener;
@@ -160,6 +161,12 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
     }
 
     private String convertArticleToHtml(Article article) {
+//        String pish = "<html><head><style type=\"text/css\">@font-face {font-family: MyFont;src: url(\"file:///android_asset/font/BMitra.ttf\")}body {font-family: MyFont;font-size: medium;text-align: justify;}</style></head><body>";
+//        String pas = "</body></html>";
+//        String myHtmlString = pish + YourTxext + pas;
+//        wv.loadDataWithBaseURL(null, myHtmlString, "text/html", "UTF-8", null);
+
+
         return String.format("<html> %s <body> <div> %s <hr/> <pre>%s <a href=\"%s\">%s</a></pre> </div> </body> </html>",
                 CSS_TAG, article.text, COVER_IMAGE_TEXT, article.sourceUrl, article.sourceName);
     }
@@ -250,6 +257,12 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
         updateLikesViews();
         mLikesButton.setOnClickListener(this);
         mShareButton.setOnClickListener(this);
+        FontManager.setFont(getActivity(), mLikesText, FontManager.ARTICLE_FONT_BOLD);
+        FontManager.setFont(getActivity(), mArticleTitle, FontManager.ARTICLE_FONT_BOLD);
+        FontManager.setFont(getActivity(), mAuthorName, FontManager.ARTICLE_FONT_BOLD);
+        FontManager.setFont(getActivity(), mArticleDate, FontManager.ARTICLE_FONT);
+        // TODO: need to change to textview?
+//        FontManager.setFont(getActivity(), mArticleText, FontManager.ARTICLE_FONT);
     }
 
     private void updateLikesViews() {

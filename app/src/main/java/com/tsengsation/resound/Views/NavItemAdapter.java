@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.tsengsation.resound.R;
+import com.tsengsation.resound.ViewHelpers.FontManager;
 
 public class NavItemAdapter extends ArrayAdapter<String> {
 
@@ -31,6 +32,7 @@ public class NavItemAdapter extends ArrayAdapter<String> {
         ImageView imageView = (ImageView) rowView.findViewById(R.id.drawer_item_image);
 
         textView.setText(mItemTexts[position]);
+        FontManager.setFont(getContext(), textView, FontManager.PETITA_MEDIUM);
         imageView.setImageResource(mItemDrawables[position]);
         return rowView;
     }
