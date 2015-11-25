@@ -15,7 +15,7 @@ import com.tsengsation.medley.R;
  */
 public class SplashActivity extends Activity implements OnDownloadCompletedListener {
 
-    private ParseMedley mParseResound;
+    private ParseMedley mParseMedley;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,9 +23,9 @@ public class SplashActivity extends Activity implements OnDownloadCompletedListe
         setContentView(R.layout.activity_splash);
 
         ParseAnalytics.trackAppOpenedInBackground(getIntent());
-        mParseResound = ParseMedley.getInstance();
-        mParseResound.setOnDownloadCompleted(this);
-        mParseResound.downloadData();
+        mParseMedley = ParseMedley.getInstance();
+        mParseMedley.setOnDownloadCompleted(this);
+        mParseMedley.downloadData();
     }
 
     @Override

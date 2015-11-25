@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Resound.iml" filepath="$PROJECT_DIR$/Resound.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Medley.iml" filepath="$PROJECT_DIR$/Medley.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
 </project>
-

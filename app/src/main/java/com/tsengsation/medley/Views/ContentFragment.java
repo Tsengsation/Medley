@@ -30,8 +30,8 @@ import com.tsengsation.medley.ViewHelpers.FontManager;
 import com.tsengsation.medley.ViewHelpers.ObservableScrollView;
 import com.tsengsation.medley.ViewHelpers.ObservableScrollView.OnFlingListener;
 import com.tsengsation.medley.ViewHelpers.ObservableScrollView.OnScrolledListener;
-import com.tsengsation.medley.ViewHelpers.ResoundNavBar;
-import com.tsengsation.medley.ViewHelpers.ResoundNavBar.NavButtonClickListener;
+import com.tsengsation.medley.ViewHelpers.NavBar;
+import com.tsengsation.medley.ViewHelpers.NavBar.NavButtonClickListener;
 import com.tsengsation.medley.ViewHelpers.ViewCalculator;
 
 
@@ -48,7 +48,7 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
     private ArticlePagerAdapter mArticlePagerAdapter;
     private View mFadeView;
     private RelativeLayout mForegroundLayout;
-    private ResoundNavBar mNavbar;
+    private NavBar mNavbar;
     private MainActivity mActivity;
 
     private ParseMedley mParseMedley;
@@ -247,7 +247,7 @@ public class ContentFragment extends Fragment implements ViewFactory, OnPageChan
         mArticlePager = (ViewPager) view.findViewById(R.id.article_pager);
         mFadeView = view.findViewById(R.id.fade_view);
         mForegroundLayout = (RelativeLayout) view.findViewById(R.id.foreground_content_layout);
-        mNavbar = (ResoundNavBar) view.findViewById(R.id.navbar);
+        mNavbar = (NavBar) view.findViewById(R.id.navbar);
         if (mIsOverlay) {
             mNavbar.setButtonDrawable(R.drawable.xbutton);
         }

@@ -11,15 +11,15 @@ import android.widget.TextView;
 import com.tsengsation.medley.R;
 
 /**
- * Navigation bar for Resound application.
+ * Navigation bar.
  */
-public class ResoundNavBar extends LinearLayout implements View.OnClickListener {
+public class NavBar extends LinearLayout implements View.OnClickListener {
 
     private ImageView mButton;
     private TextView mTextView;
     private NavButtonClickListener mButtonClickListener;
 
-    public ResoundNavBar(Context context, AttributeSet attrs) {
+    public NavBar(Context context, AttributeSet attrs) {
         super(context, attrs);
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);

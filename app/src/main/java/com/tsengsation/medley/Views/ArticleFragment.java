@@ -128,7 +128,7 @@ public class ArticleFragment extends Fragment implements OnClickListener, OnImag
         } else if (v.equals(mShareButton)) {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.setType("text/plain");
-            shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Resound");
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Medley");
             String shareMsg = String.format("Check out this article at %s",
                     mParseMedley.getShareUrl(mArticle));
             shareIntent.putExtra(Intent.EXTRA_TEXT, shareMsg);
